@@ -89,7 +89,10 @@ LTX_LOCAL_VARIANTS = {
     "ltx2-local": {
         "name": "LTX-2 (Local)",
         "hf_id": "Lightricks/LTX-2",
-        "pipeline_class": "LTXPipeline",
+        # Lightricks/LTX-2 model_index.json declares LTX2Pipeline; the older
+        # LTXPipeline class cannot instantiate this repo's components.
+        "pipeline_class": "LTX2Pipeline",
+        "i2v_pipeline_class": "LTX2ImageToVideoPipeline",
         "vram_mb": 12000,
         "quality": "high",
         "speed": "medium",
@@ -248,6 +251,10 @@ def load_diffusers_pipeline(pipeline_class: str, model_id: str, enable_offload: 
         dtype = torch.bfloat16
     elif device == "cpu":
         dtype = torch.float32
+    elif device == "mps":
+        # Gemma3/umt5-class text encoders overflow in float16; modern torch
+        # supports bfloat16 on MPS, so prefer it there.
+        dtype = torch.bfloat16
     else:
         dtype = torch.float16
 
@@ -331,7 +338,10 @@ def generate_local_video(
     num_frames = inputs.get("num_frames", meta["default_num_frames"])
     fps = meta["fps"]
     model_id = meta.get("hf_i2v_id") if operation == "image_to_video" and meta.get("hf_i2v_id") else meta["hf_id"]
-    pipeline = load_diffusers_pipeline(meta["pipeline_class"], model_id, enable_offload)
+    pipeline_class = meta["pipeline_class"]
+    if operation == "image_to_video" and meta.get("i2v_pipeline_class"):
+        pipeline_class = meta["i2v_pipeline_class"]
+    pipeline = load_diffusers_pipeline(pipeline_class, model_id, enable_offload)
 
     generation_args: dict[str, Any] = {
         "prompt": prompt,
