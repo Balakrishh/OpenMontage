@@ -105,3 +105,6 @@ venv/
 # Local TLS material (tailscale) — never commit
 *.crt
 *.key
+
+# Local Wan / diffusers GPU environment
+.venv-wan/
