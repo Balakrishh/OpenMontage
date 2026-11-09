@@ -1,0 +1,122 @@
+name: kids-science-story
+version: "1.0"
+description: >
+  Unattended ~5-minute kids science story time (ages 8-11): a recurring cast
+  (Maya and Newton the owl) walks through one vetted home experiment in
+  watercolor stills with gentle motion, warm narration and read-along
+  captions. Fully local on Apple Silicon (LM Studio + FLUX.2 + Kokoro), no
+  approval gates — every stage verifies itself and fails loudly instead of
+  asking. Export only; publishing stays a human step.
+category: generated
+stability: beta
+
+# No human gates: the checks below replace them. A failed check stops the run
+# with a written reason; nothing ships unverified.
+default_checkpoint_policy: auto_noncreative
+
+orchestration:
+  mode: unattended
+  skill: pipelines/kids-science-story/director
+  budget_default_usd: 0
+  max_revisions_per_stage: 3
+  max_wall_time_minutes: 240
+
+required_skills:
+  - pipelines/kids-science-story/director
+
+compatible_playbooks:
+  recommended:
+    - anime-ghibli
+  custom_allowed: false
+
+stages:
+  - name: idea
+    skill: pipelines/kids-science-story/director
+    produces: [brief]
+    tools_available: [kids_story_writer]
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Experiment comes from the vetted library; episode framed for ages 8-11
+      - render_runtime is the series-level choice in series.yaml (made once with the user)
+    success_criteria:
+      - Schema-valid brief
+
+  - name: script
+    skill: pipelines/kids-science-story/director
+    produces: [script]
+    tools_available: [kids_story_writer]
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Every beat ok in artifacts/story_review.json (independent critic + code checks)
+      - Science only from the experiment's approved facts; no listed misconception
+      - Steps and materials exactly as in lib/kids_science/experiments.yaml, in order
+      - Only Maya and Newton; nothing outside the series bible
+    success_criteria:
+      - kids_story_writer succeeded with no open problems
+
+  - name: scene_plan
+    skill: pipelines/kids-science-story/director
+    required_artifacts_in: [script]
+    produces: [scene_plan]
+    tools_available: [kids_story_writer]
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Shot characters and props are schema enums from the bible
+      - The result is not shown before the observe beat
+    success_criteria:
+      - 2-4 shots per beat
+
+  - name: assets
+    skill: pipelines/kids-science-story/director
+    required_artifacts_in: [scene_plan, script]
+    produces: [asset_manifest]
+    tools_available: [story_keyframes, story_narration, kokoro_tts_mlx, flux2_edit_mlx]
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Every shot passed the vision checklist hard checks (artifacts/keyframe_qa.json)
+      - Every narration line transcribes back to its script text (artifacts/narration_timing.json)
+    success_criteria:
+      - No shot status other than accepted / accepted_best / fallback
+      - Worst line error <= 0.2
+
+  - name: edit
+    skill: pipelines/kids-science-story/director
+    required_artifacts_in: [asset_manifest]
+    produces: [edit_decisions]
+    tools_available: [story_assemble, video_compose]
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Pictures follow the real narration timing, beat by beat
+    success_criteria:
+      - renders/final.mp4 exists with picture, captions and soundtrack
+
+  - name: compose
+    skill: pipelines/kids-science-story/director
+    required_artifacts_in: [edit_decisions]
+    produces: [render_report]
+    tools_available: [story_finalize]
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Final transcript matches the script; all beats heard in order
+      - No black frames, no dropouts, speech level in range
+    success_criteria:
+      - artifacts/final_review.json status pass
+
+  - name: publish
+    skill: pipelines/kids-science-story/director
+    required_artifacts_in: [render_report]
+    produces: [publish_log]
+    tools_available: [story_finalize]
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Export folder has the video, thumbnail and metadata.json
+      - Copy is engagement-only (no tools, models or tech named)
+    success_criteria:
+      - publish_log entry with status exported; nothing uploaded

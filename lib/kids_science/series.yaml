@@ -1,0 +1,100 @@
+# Kids science story time — the fixed series bible.
+#
+# Everything an episode is allowed to contain that is not the experiment
+# itself lives here. The story writer may only use these characters and these
+# setting props; the validator rejects anything else. Edit freely — this file
+# is the series' identity, not code.
+
+series:
+  name: "Arjun & Dev's Science Story Time"
+  channel: MakeItUpFilms
+  audience: "kids aged 6-11"
+  # Narration pace: slower than adult explainers, room to think.
+  words_per_minute: 135
+  target_seconds: 300
+
+style:
+  # Prepended verbatim to every image prompt. Watercolor forgives the small
+  # inconsistencies that make 3D look wrong, so first-try pass rates are higher.
+  image: >-
+    Soft watercolor children's picture-book illustration, gentle hand-painted
+    washes, visible paper texture, warm natural light, rounded friendly shapes,
+    muted pastel palette with warm accents, clean composition, no text, no
+    letters, no words, no labels, no captions, no watermark.
+  width: 1280
+  height: 720
+
+# Placeholder names and looks (user, 2026-11-08: "two boys, 9 and 6") — rename
+# freely. Changing an identity means deleting projects/_series/kids-science/
+# masters/<id>.png so the reference portrait is re-made.
+cast:
+  arjun:
+    name: Arjun
+    role: "a curious 9-year-old big brother who runs the experiment and explains why it works"
+    # Identity block: repeated verbatim in every prompt that shows him.
+    identity: >-
+      Arjun, a 9-year-old boy with warm brown skin, short neat black hair, big
+      brown eyes, a blue zip-up hoodie over a white t-shirt, and dark grey shorts
+    # What the image checker verifies: stable features only, never expression.
+    traits: "an older boy with short black hair and a blue hoodie"
+    pronoun: his
+    voice: narrator
+  dev:
+    name: Dev
+    role: "an excited 6-year-old little brother who asks questions, makes guesses and helps"
+    identity: >-
+      Dev, a 6-year-old boy, clearly smaller and younger than his brother, with
+      warm brown skin, fluffy curly black hair, round cheeks, a bright red
+      t-shirt and blue shorts
+    traits: "a smaller younger boy with curly black hair and a red t-shirt"
+    pronoun: his
+    voice: narrator
+
+voices:
+  # Kokoro voices (mlx-audio). Story-time convention: one warm storyteller
+  # reads the narration and both boys' quoted lines (Kokoro has no child voices).
+  narrator: {kokoro_voice: af_heart, lang_code: a, speed: 0.95}
+
+setting:
+  description: >-
+    the boys' cozy sunlit family kitchen with a wooden table, a big window with
+    plants on the sill, and a corner shelf of jars — the same kitchen every episode
+  # Props that may appear in any episode, beyond the experiment's materials.
+  props:
+    - wooden kitchen table
+    - window with potted plants
+    - tea towel
+    - notebook and pencil
+    - tray
+
+# Every episode has exactly these beats, in this order. Durations sum to the
+# target; the writer is told each beat's word budget from them.
+beats:
+  - {id: hook,        title: "A Mystery",          seconds: 20, purpose: "Open on the given everyday moment, which the experiment will explain. Do not explain it yet and do not invent any other phenomenon."}
+  - {id: setup,       title: "The Big Question",   seconds: 25, purpose: "Dev asks the question out loud; Arjun has an idea for how to find out. No experiment actions yet."}
+  - {id: hypothesis,  title: "What Do You Think?", seconds: 25, purpose: "Dev makes a guess and Arjun makes a different guess. Invite the viewer to guess too. Do not reveal the answer and do not touch any materials."}
+  - {id: materials,   title: "What We Need",       seconds: 25, purpose: "Name exactly the experiment's materials as they sit on the table. No pouring, mixing, folding or any other action."}
+  - {id: step1,       title: "Step 1",             seconds: 25, purpose: "Do the assigned steps exactly as given, nothing from later steps."}
+  - {id: step2,       title: "Step 2",             seconds: 25, purpose: "Do the assigned steps exactly as given, nothing from later steps."}
+  - {id: step3,       title: "Step 3",             seconds: 25, purpose: "Do the assigned steps exactly as given, nothing from later steps."}
+  - {id: step4,       title: "Step 4",             seconds: 25, purpose: "Do the assigned steps exactly as given, nothing from later steps. Do not describe the result yet."}
+  - {id: observe,     title: "Whoa!",              seconds: 25, purpose: "Describe exactly the expected observation, with wonder."}
+  - {id: explain,     title: "Why It Works",       seconds: 40, purpose: "Arjun explains to Dev using ONLY the approved science facts, simply; Dev asks one curious question."}
+  - {id: real_world,  title: "In the Real World",  seconds: 20, purpose: "Connect to one of the approved real-world examples."}
+  - {id: recap,       title: "Try It Yourself",    seconds: 20, purpose: "Sum up the big idea in a sentence, give the full safety note, and invite viewers to try it with a grown-up."}
+
+# Composition runtime — a SERIES decision, made once with the user (both
+# Remotion and HyperFrames are installed on this machine). story_assemble
+# refuses to render until this is set.
+render_runtime: remotion      # chosen by the user 2026-11-08
+render_runtime_options_considered: [remotion, hyperframes]
+render_runtime_reason: >-
+  Remotion's Explainer already does story time's needs (stills with slow Ken
+  Burns moves, word-by-word read-along captions, crossfades) and renders today.
+  HyperFrames was offered for bespoke page-turns and lettering but needs a new
+  render path built first.
+
+music:
+  # Low bed under narration; Pixabay Content License (no attribution required).
+  path: projects/the-last-signal/assets/music/film_bed_candidate_1.mp3
+  volume: 0.07

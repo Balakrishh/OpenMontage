@@ -1,0 +1,443 @@
+# Vetted kid-safe experiments — the ONLY science an episode may contain.
+#
+# The story writer never invents an experiment, a material, a step, or an
+# explanation. `facts` are the approved claims for the "why it works" beat;
+# `must_not_claim` are common misconceptions the checker rejects outright.
+# Every entry is a classic, widely published home experiment for ages 8-11.
+#
+# Fields:
+#   steps    — 4 to 8 imperative steps, distributed in order over step1..step4
+#   observe  — what really happens (the observation beat may say only this)
+#   facts    — approved explanations (paraphrase allowed, new claims not)
+#   props    — how materials look on screen (image prompts use these words)
+
+experiments:
+
+  - id: walking-water
+    title: "The Walking Water Rainbow"
+    question: "Can water climb out of a cup all by itself?"
+    materials: [three clear cups, water, red food coloring, yellow food coloring, two paper towels]
+    steps:
+      - "Line up three clear cups in a row."
+      - "Fill the two outside cups with water and leave the middle cup empty."
+      - "Add red food coloring to the left cup and yellow food coloring to the right cup."
+      - "Fold two paper towels into long strips."
+      - "Put one end of each strip in a colored cup and the other end in the empty middle cup."
+      - "Wait about an hour and watch."
+    observe: "The colored water creeps up the paper towels and drips into the middle cup, where red and yellow mix to make orange."
+    facts:
+      - "Paper towels are made of tiny fibers with tiny gaps between them."
+      - "Water sticks to the fibers, and water also sticks to itself, so it pulls itself up through the tiny gaps."
+      - "This climbing through tiny spaces is called capillary action."
+      - "Red and yellow mix to make orange."
+    must_not_claim:
+      - "the paper towel sucks water like a pump"
+      - "the water is alive or wants to move"
+    real_world: ["Plants use capillary action to help move water up through thin tubes in their stems.", "A towel soaks up a spill the same way."]
+    safety: "Food coloring can stain clothes and tables, so use a tray."
+    props: ["three clear plastic cups in a row", "red-colored water", "yellow-colored water", "folded white paper towel strips bridging the cups"]
+
+  - id: fizzy-volcano
+    title: "The Fizzy Kitchen Volcano"
+    question: "Why does baking soda fizz when you add vinegar?"
+    materials: [a small plastic bottle, baking soda, vinegar, dish soap, red food coloring, a tray]
+    steps:
+      - "Stand a small plastic bottle in the middle of a tray."
+      - "Spoon two big spoonfuls of baking soda into the bottle."
+      - "Add a squirt of dish soap and a few drops of red food coloring."
+      - "Pour in half a cup of vinegar and step back."
+    observe: "Red foam bubbles up out of the bottle and spills down the sides onto the tray."
+    facts:
+      - "Vinegar is an acid and baking soda is a base."
+      - "When an acid and a base meet, they react and make a new gas called carbon dioxide."
+      - "The gas makes bubbles, and the dish soap traps the bubbles into a thick foam."
+    must_not_claim:
+      - "real volcanoes erupt because of vinegar and baking soda"
+      - "the foam is lava or is hot"
+    real_world: ["Bakers use baking soda so that gas bubbles make cakes rise.", "The fizz in fizzy drinks is carbon dioxide gas too."]
+    safety: "Wear safety goggles, never drink the mixture, and do it on a tray."
+    props: ["small clear plastic bottle on a tray", "box of baking soda", "bottle of vinegar", "bottle of dish soap", "red foam overflowing"]
+
+  - id: static-balloon
+    title: "The Balloon That Sticks to the Wall"
+    question: "How can a balloon stick to a wall without any tape?"
+    materials: [a balloon, your hair or a wool sweater, a wall]
+    steps:
+      - "Blow up a balloon and tie it closed."
+      - "Rub the balloon quickly on your hair or a wool sweater for about ten seconds."
+      - "Gently hold the rubbed side of the balloon against a wall."
+      - "Let go carefully and watch."
+    observe: "The balloon stays stuck to the wall for a while, and your hair may stand up toward the balloon."
+    facts:
+      - "Everything is made of tiny particles, and some of them, called electrons, carry a tiny electric charge."
+      - "Rubbing moves some electrons from your hair onto the balloon, so the balloon gets an extra negative charge."
+      - "When the charged balloon comes near the wall, it pushes the wall's electrons a tiny bit away, so the wall's surface becomes slightly positive."
+      - "Opposite charges attract, so the balloon and the wall pull toward each other. This is called static electricity."
+    must_not_claim:
+      - "the wall is positively charged before the balloon arrives"
+      - "the balloon becomes a magnet"
+    real_world: ["Static is why socks cling together when they come out of the dryer.", "That little zap when you touch a doorknob is static electricity jumping."]
+    safety: "If the balloon pops, pick up every piece — balloon pieces are a choking danger for little kids."
+    props: ["round red balloon", "plain painted wall", "Maya's curly hair standing up"]
+
+  - id: density-tower
+    title: "The Rainbow Liquid Tower"
+    question: "Why do some liquids float on top of others?"
+    materials: [a tall clear glass, honey, dish soap, water, blue food coloring, vegetable oil]
+    steps:
+      - "Pour a little honey into the bottom of a tall clear glass."
+      - "Slowly pour dish soap on top of the honey."
+      - "Mix a few drops of blue food coloring into some water."
+      - "Slowly pour the blue water down the side of the glass."
+      - "Slowly pour vegetable oil on top."
+    observe: "The liquids stay in separate stacked layers: honey at the bottom, then soap, then blue water, with oil floating on top."
+    facts:
+      - "Density is how much stuff is packed into a space."
+      - "A liquid that is more dense sinks below a liquid that is less dense."
+      - "Honey is the most dense of these liquids, so it stays at the bottom, and oil is the least dense, so it floats on top."
+      - "Thick does not always mean dense: oil is thicker than water but less dense, so it floats."
+    must_not_claim:
+      - "the heaviest liquid always sinks no matter how much you pour"
+      - "oil floats because it is lighter in color"
+    real_world: ["Oil spilled on the sea floats on top of the water.", "Salad dressing separates into layers when it sits still."]
+    safety: "Pour slowly, and don't drink the tower."
+    props: ["tall clear drinking glass with stacked liquid layers", "jar of golden honey", "green dish soap bottle", "blue-colored water", "bottle of yellow vegetable oil"]
+
+  - id: floating-egg
+    title: "The Egg That Learned to Float"
+    question: "Can you make an egg float?"
+    materials: [a tall clear glass, water, an egg, salt, a spoon]
+    steps:
+      - "Fill a tall glass about halfway with water."
+      - "Gently lower an egg into the water with a spoon."
+      - "Take the egg out and stir lots of salt into the water until no more dissolves."
+      - "Gently lower the egg back in."
+    observe: "In plain water the egg sinks to the bottom, but in very salty water it floats."
+    facts:
+      - "Things sink if they are more dense than the water and float if they are less dense."
+      - "An egg is a little more dense than plain water, so it sinks."
+      - "Dissolving salt in water makes the water more dense."
+      - "When the salty water becomes more dense than the egg, the egg floats."
+    must_not_claim:
+      - "the salt makes the egg lighter"
+      - "the salt soaks into the egg and fills it with air"
+    real_world: ["People float more easily in the very salty Dead Sea than in a swimming pool."]
+    safety: "Wash your hands after touching a raw egg."
+    props: ["tall clear glass of water", "white egg", "salt shaker and spoon", "egg floating in the middle of the glass"]
+
+  - id: rainbow-milk
+    title: "The Swirling Rainbow Milk"
+    question: "Can a drop of soap make colors dance?"
+    materials: [a shallow plate, whole milk, red food coloring, blue food coloring, yellow food coloring, dish soap, a cotton swab]
+    steps:
+      - "Pour whole milk into a shallow plate until the bottom is covered."
+      - "Add drops of red, blue and yellow food coloring near the middle."
+      - "Dip a cotton swab in dish soap."
+      - "Touch the soapy swab to the middle of the milk and hold it still."
+    observe: "The colors suddenly burst outward and swirl around the plate."
+    facts:
+      - "The surface of milk acts like a thin stretchy skin because of surface tension."
+      - "Soap weakens the surface tension where it touches, so the surface pulls away toward the edges and carries the colors with it."
+      - "Soap also grabs onto the tiny bits of fat in the milk, which keeps the milk moving and swirling."
+    must_not_claim:
+      - "the soap makes brand-new colors"
+      - "the milk is boiling"
+    real_world: ["Soap helps wash greasy dishes because it grabs onto fat."]
+    safety: "Don't drink the milk afterward."
+    props: ["shallow white plate of milk", "swirls of red blue and yellow color", "cotton swab", "small bottle of dish soap"]
+
+  - id: pepper-scatter
+    title: "The Pepper That Ran Away"
+    question: "Why does pepper rush away from soap?"
+    materials: [a shallow bowl, water, ground black pepper, dish soap, a cotton swab]
+    steps:
+      - "Fill a shallow bowl with water."
+      - "Sprinkle ground black pepper all over the surface."
+      - "Dip a cotton swab in dish soap."
+      - "Touch the soapy swab to the middle of the water."
+    observe: "The pepper instantly rushes away from the swab toward the edges of the bowl."
+    facts:
+      - "Water's surface acts like a stretchy skin because of surface tension, and the pepper floats on it."
+      - "Soap weakens the surface tension where it touches."
+      - "The stronger surface at the edges pulls the water outward, and the floating pepper is carried along."
+    must_not_claim:
+      - "the pepper is scared of the soap"
+      - "the soap pushes the pepper with a chemical explosion"
+    real_world: ["Some small bugs can walk on water because of surface tension."]
+    safety: "Keep pepper away from your eyes and nose."
+    props: ["shallow white bowl of water", "black pepper flakes floating on the surface", "cotton swab", "small bottle of dish soap"]
+
+  - id: lemon-invisible-ink
+    title: "The Secret Lemon Message"
+    question: "Can you write a message nobody can see?"
+    materials: [half a lemon, a small bowl, a cotton swab, white paper, a grown-up with a hair dryer]
+    steps:
+      - "Squeeze lemon juice into a small bowl."
+      - "Dip a cotton swab in the lemon juice and write a message on white paper."
+      - "Let the paper dry until the message disappears."
+      - "Ask a grown-up to warm the paper with a hair dryer on hot."
+    observe: "As the paper warms, the secret message slowly appears in light brown letters."
+    facts:
+      - "Lemon juice has carbon-based substances, like sugars and acids, in it."
+      - "When the dried juice is heated, those substances change and turn brown before the paper does."
+      - "That browning makes the hidden writing show up."
+    must_not_claim:
+      - "the lemon juice glows in the dark"
+      - "you should heat the paper with a flame or a stove"
+    real_world: ["Toast and cut apples turn brown for similar reasons when things in them change."]
+    safety: "Only a grown-up handles the heat, and never use a flame."
+    props: ["half a yellow lemon", "small bowl of lemon juice", "cotton swab", "sheet of white paper", "grown-up's hands holding a hair dryer"]
+
+  - id: colored-celery
+    title: "The Thirsty Celery"
+    question: "How does a plant drink?"
+    materials: [two clear glasses, water, blue food coloring, red food coloring, celery stalks with leaves]
+    steps:
+      - "Fill two clear glasses with water."
+      - "Add lots of blue food coloring to one glass and red to the other."
+      - "Stand a celery stalk with leaves in each glass."
+      - "Leave them overnight and look at the leaves in the morning."
+    observe: "The celery leaves turn blue and red at their edges, and colored dots show at the bottom of the stalks."
+    facts:
+      - "Plants have thin tubes inside their stems that carry water up from the roots."
+      - "Water evaporates from the leaves, and that helps pull more water up through the tubes."
+      - "The food coloring travels with the water, so it shows us where the water went."
+    must_not_claim:
+      - "the celery drinks the color with a mouth"
+      - "the coloring is food that makes the plant grow"
+    real_world: ["Trees lift water from their roots all the way to their highest leaves."]
+    safety: "Throw the colored celery away — don't eat it."
+    props: ["two clear glasses of blue and red water", "green celery stalks with leafy tops", "leaf edges tinted blue and red"]
+
+  - id: glass-rainbow
+    title: "A Rainbow in a Glass"
+    question: "Where do rainbows come from?"
+    materials: [a clear glass of water, a sunny window or a flashlight, a sheet of white paper]
+    steps:
+      - "Fill a clear glass to the top with water."
+      - "Set it in bright sunlight near a window, or shine a flashlight through it in a dark room."
+      - "Hold a sheet of white paper on the other side of the glass."
+      - "Move the paper and the glass around until colors appear."
+    observe: "A small rainbow of colors appears on the white paper."
+    facts:
+      - "White light is really a mix of all the colors."
+      - "Light bends when it goes from air into water and back out. This bending is called refraction."
+      - "Each color bends a slightly different amount, so the colors spread apart into a rainbow."
+    must_not_claim:
+      - "the water adds color to the light"
+      - "rainbows are made of paint in the sky"
+    real_world: ["After rain, sunlight bends through millions of raindrops to make a rainbow in the sky."]
+    safety: "Never look straight at the sun."
+    props: ["clear glass of water on a sunny windowsill", "white sheet of paper", "small rainbow stripe of colors on the paper"]
+
+  - id: lava-lamp
+    title: "The Kitchen Lava Lamp"
+    question: "Can you make blobs that float up and down?"
+    materials: [a clear bottle, water, vegetable oil, blue food coloring, a fizzy tablet]
+    steps:
+      - "Fill a clear bottle about a quarter full with water."
+      - "Fill the rest of the bottle almost to the top with vegetable oil."
+      - "Add a few drops of blue food coloring and watch them sink through the oil."
+      - "Break a fizzy tablet into pieces and drop one piece in."
+    observe: "Blue bubbly blobs rise up through the oil, then sink back down, again and again."
+    facts:
+      - "Oil and water don't mix, and the oil floats on top because it is less dense."
+      - "Food coloring mixes with water, not oil, so it sinks down into the water."
+      - "The fizzy tablet makes bubbles of carbon dioxide gas that carry blobs of colored water up."
+      - "At the top the bubbles pop, and the heavier water blobs sink back down."
+    must_not_claim:
+      - "the blobs are melted wax or hot lava"
+      - "the oil and water mix together"
+    real_world: ["Real lava lamps use heat to move wax blobs up and down."]
+    safety: "Fizzy tablets are not candy — a grown-up keeps them."
+    props: ["tall clear bottle with yellow oil above blue water", "blue bubbly blobs rising through oil", "white fizzy tablet pieces"]
+
+  - id: candy-rainbow
+    title: "The Candy Color Wheel"
+    question: "Where do candy colors go in warm water?"
+    materials: [a white plate, round colored candies, warm water]
+    steps:
+      - "Arrange round colored candies in a circle around the edge of a white plate."
+      - "Gently pour warm water into the middle until it touches every candy."
+      - "Hold still and watch for one minute."
+    observe: "Stripes of color spread from each candy toward the middle like a rainbow wheel."
+    facts:
+      - "The colorful coating on the candies is made mostly of sugar and color."
+      - "Warm water dissolves the coating, and the color spreads out through the water."
+      - "Spreading out from where there is a lot to where there is a little is called diffusion."
+    must_not_claim:
+      - "the candies are melting from heat like ice cream"
+      - "the colors are pushed by wind"
+    real_world: ["A tea bag in hot water spreads color the same way."]
+    safety: "Ask a grown-up for the warm water, and don't eat the wet candies."
+    props: ["white round plate", "ring of round colored candies", "rainbow stripes of color spreading inward"]
+
+  - id: balloon-rocket
+    title: "The Balloon Rocket"
+    question: "Can air push a rocket?"
+    materials: [a long piece of string, a drinking straw, a balloon, tape, two chairs]
+    steps:
+      - "Thread a long piece of string through a drinking straw."
+      - "Tie each end of the string to a chair and pull the chairs apart so the string is tight."
+      - "Blow up a balloon, pinch the end closed, and tape it under the straw."
+      - "Let go of the balloon."
+    observe: "The balloon zooms along the string as the air rushes out the back."
+    facts:
+      - "When the balloon squeezes air out the back, the air pushes the balloon forward."
+      - "Every push has an equal push in the opposite direction. Scientists call this Newton's third law."
+      - "The straw keeps the balloon going straight along the string."
+    must_not_claim:
+      - "the balloon flies because it is full of a gas lighter than air"
+      - "the string pulls the balloon"
+    real_world: ["Real rockets push hot gas out the back so the rocket goes up."]
+    safety: "Keep the string low and clear of faces."
+    props: ["long string stretched between two wooden chairs", "drinking straw on the string", "inflated red balloon taped under the straw"]
+
+  - id: ice-fishing
+    title: "Fishing for Ice"
+    question: "Can you pick up an ice cube with a string?"
+    materials: [a glass of water, an ice cube, a piece of string, salt]
+    steps:
+      - "Float an ice cube in a glass of water."
+      - "Lay one end of a piece of string across the top of the ice cube."
+      - "Sprinkle a pinch of salt over the string and the ice."
+      - "Wait about one minute, then gently lift the string."
+    observe: "The ice cube lifts out of the water, stuck to the string."
+    facts:
+      - "Salt makes ice melt at a lower temperature, so the top of the ice melts a little."
+      - "The melting uses up heat and makes that spot colder."
+      - "As the salt spreads out, the cold water around the string freezes again and traps the string in the ice."
+    must_not_claim:
+      - "salt is a kind of glue"
+      - "the salt makes the ice hotter"
+    real_world: ["Trucks spread salt on icy roads in winter to help the ice melt."]
+    safety: "Wipe up spills so nobody slips."
+    props: ["clear glass of water with a floating ice cube", "piece of white string", "salt shaker", "ice cube hanging from the string"]
+
+  - id: dancing-raisins
+    title: "The Dancing Raisins"
+    question: "Can raisins dance?"
+    materials: [a tall clear glass, clear fizzy water, a handful of raisins]
+    steps:
+      - "Pour clear fizzy water into a tall glass."
+      - "Drop a few raisins in."
+      - "Watch closely for a few minutes."
+    observe: "The raisins sink, then float up to the top, then sink again, over and over."
+    facts:
+      - "Fizzy water is full of carbon dioxide gas bubbles."
+      - "Bubbles stick to the wrinkly raisins and lift them up like tiny balloons."
+      - "At the top the bubbles pop, and the raisins sink back down to collect more bubbles."
+    must_not_claim:
+      - "the raisins are alive"
+      - "the raisins get lighter because they shrink"
+    real_world: ["Divers and submarines go up and down by changing how much air they carry."]
+    safety: "Use a plastic glass if you are near the floor."
+    props: ["tall clear glass of bubbly fizzy water", "dark wrinkly raisins covered in tiny bubbles"]
+
+  - id: oobleck
+    title: "The Goo That Is Solid and Liquid"
+    question: "Can something be a liquid and a solid at the same time?"
+    materials: [a mixing bowl, cornstarch, water, a spoon]
+    steps:
+      - "Pour two cups of cornstarch into a mixing bowl."
+      - "Slowly stir in one cup of water."
+      - "Punch or tap the goo quickly with your finger."
+      - "Now slowly sink your fingers into it, and scoop some up and let it drip."
+    observe: "When you tap it fast it feels hard like a solid, but when you move slowly it flows like a liquid."
+    facts:
+      - "The goo is tiny cornstarch grains floating in water."
+      - "When you push slowly, the water lets the grains slide past each other, so it flows."
+      - "When you hit it fast, the grains jam together and it acts like a solid."
+      - "Scientists call this a non-Newtonian fluid, because it changes how runny it is when you push on it."
+    must_not_claim:
+      - "the goo turns into a real solid permanently"
+      - "it is slime made with glue"
+    real_world: ["Wet sand at the beach gets firmer when you stomp on it quickly."]
+    safety: "Throw the goo in the trash, not down the sink, because it can clog drains."
+    props: ["white mixing bowl of thick white goo", "box of cornstarch", "Maya's fingers dripping with white goo"]
+
+  - id: paperclip-float
+    title: "The Floating Paper Clip"
+    question: "Can metal float on water?"
+    materials: [a bowl of water, a small piece of tissue paper, a metal paper clip, a pencil]
+    steps:
+      - "Fill a bowl with water."
+      - "Lay a small piece of tissue paper flat on the water."
+      - "Gently place a paper clip on top of the tissue."
+      - "Use a pencil to carefully push the tissue down until it sinks."
+    observe: "The tissue sinks, but the paper clip stays floating on top of the water."
+    facts:
+      - "The water's surface acts like a thin stretchy skin because of surface tension."
+      - "A paper clip is more dense than water, so it would normally sink."
+      - "If it is set down gently, the surface skin can hold it up."
+    must_not_claim:
+      - "the paper clip floats because metal is lighter than water"
+      - "the tissue glues the clip to the water"
+    real_world: ["Water striders are bugs that skate on ponds using surface tension."]
+    safety: "Paper clips are small — keep them away from little kids."
+    props: ["clear bowl of water", "silver metal paper clip resting on the water surface", "small square of white tissue", "yellow pencil"]
+
+  - id: sunset-glass
+    title: "A Sunset in a Glass"
+    question: "Why is the sky blue, and why are sunsets orange?"
+    materials: [a clear glass of water, a few drops of milk, a flashlight, a dark room]
+    steps:
+      - "Fill a clear glass with water."
+      - "Stir in a few drops of milk."
+      - "In a dark room, shine a flashlight through the side of the glass."
+      - "Look at the glass from the side, then look straight through it at the flashlight."
+    observe: "From the side the water looks slightly blue, but looking straight through toward the flashlight it looks orange."
+    facts:
+      - "White light is a mix of all colors."
+      - "Tiny bits in the water bounce blue light around more than red and orange light. This is called scattering."
+      - "Air does the same thing to sunlight, so blue light bounces all over the sky and the sky looks blue."
+      - "At sunset, sunlight passes through much more air, so most of the blue gets scattered away and the orange and red light reaches our eyes."
+    must_not_claim:
+      - "the sky is blue because it reflects the ocean"
+      - "the sun changes color at sunset"
+    real_world: ["That is why sunsets and sunrises glow orange and red."]
+    safety: "Never shine the flashlight into anyone's eyes."
+    props: ["clear glass of slightly cloudy water", "flashlight beam in a dark room", "soft blue glow on one side and warm orange glow through the glass"]
+
+  - id: bean-sprout
+    title: "The Bean in a Bag"
+    question: "What does a seed need to start growing?"
+    materials: [a clear zip bag, a paper towel, water, a few dried beans, tape, a sunny window]
+    steps:
+      - "Wet a paper towel so it is damp but not dripping."
+      - "Fold it and slide it into a clear zip bag."
+      - "Place a few dried beans inside against the towel and close the bag."
+      - "Tape the bag to a sunny window and check it every day for a week."
+    observe: "After a few days a root pokes out and grows downward, and later a green shoot grows upward."
+    facts:
+      - "A seed holds a tiny baby plant and a packed lunch of food to start growing."
+      - "Water wakes the seed up, and warmth helps it grow."
+      - "Roots grow down because they can sense gravity, and shoots grow up toward the light."
+      - "A new plant does not need soil just to start, because the seed has its own food."
+    must_not_claim:
+      - "seeds need soil to sprout"
+      - "the bean grows into a plant in one day"
+    real_world: ["Farmers soak some seeds before planting to help them sprout faster."]
+    safety: "Don't eat the dried beans."
+    props: ["clear zip bag taped to a sunny window", "damp folded paper towel", "pale beans with a small white root and a green shoot"]
+
+  - id: needle-compass
+    title: "The Homemade Compass"
+    question: "How does a compass know where north is?"
+    materials: [a sewing needle, a magnet, a small piece of cork, a bowl of water, a grown-up helper]
+    steps:
+      - "Ask a grown-up to stroke a sewing needle with a magnet, about thirty times in the same direction."
+      - "Ask the grown-up to push the needle carefully through a small piece of cork."
+      - "Float the cork in a bowl of still water."
+      - "Watch the needle slowly turn and settle."
+    observe: "The needle slowly turns and points in the same direction every time, north and south."
+    facts:
+      - "Stroking the needle with a magnet makes the needle into a weak magnet."
+      - "The Earth acts like a giant magnet."
+      - "A floating magnet turns to line up with the Earth's magnetism, so it points north and south."
+    must_not_claim:
+      - "the needle points at the North Star"
+      - "any metal will point north without being magnetized"
+    real_world: ["Sailors and hikers have used compasses for hundreds of years to find their way."]
+    safety: "Needles are sharp, so only a grown-up handles the needle."
+    props: ["shallow bowl of still water", "small round cork floating with a silver needle through it", "red horseshoe magnet", "grown-up's hands"]

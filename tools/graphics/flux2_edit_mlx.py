@@ -31,6 +31,7 @@ from tools.base_tool import (
 )
 
 DEFAULT_CLI = os.path.expanduser("~/.local/bin/mflux-generate-flux2-edit")
+DEFAULT_T2I_CLI = os.path.expanduser("~/.local/bin/mflux-generate-flux2")
 
 
 class Flux2EditMLX(BaseTool):
@@ -62,10 +63,15 @@ class Flux2EditMLX(BaseTool):
 
     input_schema = {
         "type": "object",
-        "required": ["prompt", "reference_image_paths"],
+        "required": ["prompt"],
         "properties": {
             "prompt": {"type": "string"},
             "reference_image_paths": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+            "text_to_image": {
+                "type": "boolean",
+                "description": "Generate from the prompt alone (mflux-generate-flux2) — e.g. to mint a "
+                               "character's first reference. Without it, references are required.",
+            },
             "base_model": {"type": "string", "enum": ["flux2-klein-9b", "flux2-klein-base-9b", "flux2-klein-4b"], "default": "flux2-klein-9b"},
             "width": {"type": "integer", "default": 768},
             "height": {"type": "integer", "default": 512},
@@ -96,18 +102,32 @@ class Flux2EditMLX(BaseTool):
     def execute(self, inputs: dict[str, object]) -> ToolResult:
         if self.get_status() != ToolStatus.AVAILABLE:
             return ToolResult(success=False, error="mflux-generate-flux2-edit not found. " + self.install_instructions)
-        refs = [str(p) for p in inputs["reference_image_paths"]]
+        refs = [str(p) for p in inputs.get("reference_image_paths") or []]
+        text_only = bool(inputs.get("text_to_image")) and not refs
+        if not refs and not text_only:
+            return ToolResult(
+                success=False,
+                error="reference_image_paths is required (or set text_to_image: true to generate from the prompt alone)",
+            )
         for r in refs:
             if not Path(r).is_file():
                 return ToolResult(success=False, error=f"reference image missing: {r}")
         output_path = Path(str(inputs.get("output_path", "flux2_edit_output.png")))
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        cli = os.environ.get("MFLUX_FLUX2_EDIT_CLI", DEFAULT_CLI)
-        cmd = [
-            cli, "--base-model", str(inputs.get("base_model", "flux2-klein-9b")),
-            "--image-paths", *refs,
-            "--prompt", str(inputs["prompt"]),
+        if text_only:
+            cli = os.environ.get("MFLUX_FLUX2_CLI", DEFAULT_T2I_CLI)
+            if not Path(cli).is_file():
+                return ToolResult(success=False, error=f"{cli} not found. " + self.install_instructions)
+            cmd = [cli, "--base-model", str(inputs.get("base_model", "flux2-klein-9b")), "--prompt", str(inputs["prompt"])]
+        else:
+            cli = os.environ.get("MFLUX_FLUX2_EDIT_CLI", DEFAULT_CLI)
+            cmd = [
+                cli, "--base-model", str(inputs.get("base_model", "flux2-klein-9b")),
+                "--image-paths", *refs,
+                "--prompt", str(inputs["prompt"]),
+            ]
+        cmd += [
             "--width", str(inputs.get("width", 768)), "--height", str(inputs.get("height", 512)),
             "--steps", str(inputs.get("steps", 14)),
             "--output", str(output_path),

@@ -1,3 +1,4 @@
+import React from "react";
 import {
   AbsoluteFill,
   Sequence,
@@ -110,8 +111,8 @@ const PageRenderer: React.FC<{
             const isActive = w.startMs <= currentMs && w.endMs > currentMs;
             const isPast = w.endMs <= currentMs;
             return (
+              <React.Fragment key={`${w.startMs}-${i}`}>
               <span
-                key={`${w.startMs}-${i}`}
                 style={{
                   // Keep each word unbroken so lines wrap only at word
                   // boundaries. For space-delimited text this matches the
@@ -125,8 +126,13 @@ const PageRenderer: React.FC<{
                     : "0 2px 4px rgba(0,0,0,0.5)",
                 }}
               >
-                {w.word}{i < page.words.length - 1 ? wordSeparator : ""}
+                {w.word}
               </span>
+              {/* The separator sits BETWEEN the inline-blocks: trailing
+                  whitespace inside an inline-block is dropped by the layout,
+                  which ran every English word together. */}
+              {i < page.words.length - 1 ? wordSeparator : null}
+              </React.Fragment>
             );
           })}
         </span>
