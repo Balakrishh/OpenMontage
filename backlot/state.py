@@ -348,6 +348,117 @@ def _asset_entry(project_dir: Path, asset: dict) -> dict:
     }
 
 
+# Where per-scene media lands while a run is still generating. The asset
+# manifest is only written when the assets stage COMPLETES, so an in-flight
+# run has files on disk but nothing on the board — these dirs are scanned to
+# close that gap (see _discover_scene_assets).
+SCENE_SCAN_DIRS = (
+    "assets/images/keyframes",
+    "assets/images",
+    "assets/frames",
+    "assets/video",
+    "renders",
+)
+
+# Event keys that carry the file a tool is writing, used to recover a
+# scene id when the event itself doesn't carry one.
+EVENT_PATH_KEYS = ("output_path", "output_file", "video_path", "image_path", "audio_path")
+
+
+def _scene_id_for_stem(stem: str, scene_ids: set[str]) -> Optional[str]:
+    """`sh07` and `sh07_v2` both belong to scene `sh07`."""
+    if stem in scene_ids:
+        return stem
+    head = stem.split("_", 1)[0]
+    return head if head in scene_ids else None
+
+
+def _discover_scene_assets(project_dir: Path, scene_ids: set[str]) -> dict[str, list[dict]]:
+    """Per-scene media found on disk, for scenes the manifest doesn't cover.
+
+    Generation writes `assets/images/keyframes/sh07.png` then
+    `assets/video/sh07.mp4` long before the assets stage completes and the
+    asset_manifest is written. Without this the board shows shot-spec
+    placeholders for an entire multi-hour run. The manifest always wins:
+    this only fills scenes with no renderable manifest asset, so a finished
+    project's board is unchanged.
+
+    Files whose name starts with "_" are working state (`_rejected_*`,
+    `_masters_tmp`, `_preview_*`) and are never shown.
+    """
+    if not scene_ids:
+        return {}
+    found: dict[str, list[tuple[int, float, dict]]] = {}
+    for rel_dir in SCENE_SCAN_DIRS:
+        directory = project_dir / rel_dir
+        if not directory.is_dir():
+            continue
+        try:
+            entries = sorted(directory.iterdir())
+        except OSError:
+            continue
+        for f in entries:
+            if f.name.startswith(("_", ".")):
+                continue
+            ext = f.suffix.lower()
+            if ext in MEDIA_IMAGE_EXT:
+                kind, rank = "image", 0
+            elif ext in MEDIA_VIDEO_EXT:
+                kind, rank = "video", 1
+            else:
+                continue
+            sid = _scene_id_for_stem(f.stem, scene_ids)
+            if sid is None:
+                continue
+            try:
+                if not f.is_file():
+                    continue
+                mtime = f.stat().st_mtime
+            except OSError:
+                continue
+            found.setdefault(sid, []).append((rank, mtime, {
+                "id": f"disk:{_rel(project_dir, f)}",
+                "type": kind,
+                "scene_id": sid,
+                "path": _rel(project_dir, f),
+                "exists": True,
+                "renderable": True,
+                "discovered": True,
+                "prompt": None,
+                "model": None,
+                "source_tool": None,
+                "provider": None,
+                "cost_usd": None,
+                "quality_score": None,
+                "duration_seconds": None,
+                "resolution": None,
+            }))
+    # Images before videos, oldest first within a kind: the board takes the
+    # LAST renderable as the active visual, so a finished clip supersedes its
+    # own keyframe while both stay available as takes.
+    return {
+        sid: [entry for _rank, _mtime, entry in sorted(items, key=lambda t: (t[0], t[1]))]
+        for sid, items in found.items()
+    }
+
+
+def _scene_id_from_event(ev: dict, scene_ids: set[str]) -> Optional[str]:
+    """Recover a scene id from the path a tool event is writing.
+
+    Tool instrumentation attributes events by output path, not by scene, so
+    the per-scene "generating" state never lights up for a pipeline that
+    doesn't pass an explicit scene_id.
+    """
+    for key in EVENT_PATH_KEYS:
+        value = ev.get(key)
+        if not isinstance(value, str) or not value:
+            continue
+        sid = _scene_id_for_stem(Path(value).stem, scene_ids)
+        if sid is not None:
+            return sid
+    return None
+
+
 def _find_scene_snapshot(project_dir: Path, scene_id: str) -> Optional[dict]:
     """A per-scene review still, if the run wrote one.
 
@@ -423,12 +534,31 @@ def _build_storyboard(
         entry = _asset_entry(project_dir, asset)
         assets_by_scene.setdefault(scene_key(entry.get("scene_id")), []).append(entry)
 
+    scene_ids = {
+        scene_key(scene.get("id"))
+        for scene in scene_plan["scenes"]
+        if isinstance(scene, dict)
+    }
+    scene_ids.discard("")
+
+    # Fill scenes the manifest can't cover yet (assets stage still running)
+    # with what is already on disk, so previews appear as they are generated.
+    uncovered = {
+        sid for sid in scene_ids
+        if not any(a.get("renderable") for a in assets_by_scene.get(sid, []))
+    }
+    for sid, entries in _discover_scene_assets(project_dir, uncovered).items():
+        assets_by_scene.setdefault(sid, []).extend(entries)
+
     # A scene is "generating" if its most recent top-level event is an
     # unfinished start. Nested (depth>0) provider events inside a selector
     # call are skipped — the outer call's finish is the real completion.
     generating: dict[str, dict] = {}
     for ev in events:
         sid = ev.get("scene_id")
+        if sid is None:
+            # Events are attributed by output path, not scene id.
+            sid = _scene_id_from_event(ev, scene_ids)
         if sid is None or ev.get("depth"):
             continue
         sid = scene_key(sid)
@@ -505,9 +635,13 @@ def _scan_media(project_dir: Path) -> dict[str, list[dict]]:
     snapshots: list[dict] = []
     music: list[dict] = []
 
-    renders_dir = project_dir / "renders"
-    if renders_dir.is_dir():
-        for f in sorted(renders_dir.iterdir()):
+    # Finished deliverables live in export/ (story pipelines, export_bundle) —
+    # list them alongside renders so the board is where you watch the result.
+    for dirname in ("renders", "export", "exports"):
+        media_dir = project_dir / dirname
+        if not media_dir.is_dir():
+            continue
+        for f in sorted(media_dir.iterdir()):
             if f.suffix.lower() in MEDIA_VIDEO_EXT and f.is_file():
                 renders.append({"path": _rel(project_dir, f), "size": f.stat().st_size,
                                 "mtime": f.stat().st_mtime})

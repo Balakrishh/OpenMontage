@@ -3,6 +3,13 @@
 The watcher observes ``projects/`` with watchfiles; on any change it bumps a
 per-project version and wakes SSE subscribers, who tell the browser to
 refetch state. The server never writes to project directories.
+
+One scoped exception: ``POST /api/project/{id}/publish`` (see ``backlot.publish``).
+The server still writes nothing itself — it invokes the ``youtube_upload`` tool,
+which writes the same ``publish_log`` / ``checkpoint_publish`` files the publish
+stage has always written, and the board picks the result up through the ordinary
+watcher. The publish stage is human-gated by design; the endpoint refuses a
+request that does not carry an explicit confirmation.
 """
 
 from __future__ import annotations
@@ -18,9 +25,16 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
+from backlot import publish as publish_mod
 from backlot.state import PROJECTS_DIR, REPO_ROOT, list_projects, load_board_state, summarize_project
 
 UI_DIR = Path(__file__).resolve().parent / "ui"
+
+# A publish request must carry this header. Browsers only allow a custom header
+# cross-origin after a successful CORS preflight, which this app never grants —
+# so requiring it stops any other page in the browser from POSTing to the local
+# board and putting a video on the user's channel.
+PUBLISH_HEADER = "x-backlot-publish"
 THUMB_CACHE_DIR = REPO_ROOT / ".backlot" / "thumbs"
 THUMB_WIDTHS = (320, 640, 960)
 
@@ -238,6 +252,59 @@ def create_app() -> FastAPI:
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
         })
+
+    # ---- Publish (the one write path — see backlot/publish.py) ----------
+
+    @app.get("/api/project/{project_id}/publish/preflight")
+    async def publish_preflight(project_id: str, path: str) -> dict:
+        """What the confirmation dialog needs: probe, Shorts verdict, metadata,
+        credential readiness, and whether these bytes already went up."""
+        project_dir = _safe_project_dir(project_id)
+        try:
+            return await asyncio.to_thread(publish_mod.preflight, project_dir, path)
+        except publish_mod.PublishError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+    @app.post("/api/project/{project_id}/publish/thumbnail")
+    async def publish_thumbnail(project_id: str, request: Request) -> dict:
+        """Set the thumbnail on a video already on YouTube. Same guards as publish."""
+        if request.headers.get(PUBLISH_HEADER) != "1":
+            raise HTTPException(status_code=403, detail="missing publish header")
+        project_dir = _safe_project_dir(project_id)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="expected a JSON body")
+        try:
+            result = await asyncio.to_thread(publish_mod.set_thumbnail, project_dir, body)
+        except publish_mod.PublishError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+        hub.publish(project_id)
+        return result
+
+    @app.post("/api/project/{project_id}/publish")
+    async def publish_project(project_id: str, request: Request) -> dict:
+        """Upload a render to YouTube. Requires an explicit human confirmation.
+
+        A failed upload comes back as ``{"success": false, "error": ...}`` with
+        HTTP 200: it is an outcome to show in the dialog, not a server fault.
+        """
+        if request.headers.get(PUBLISH_HEADER) != "1":
+            raise HTTPException(status_code=403, detail="missing publish header")
+        project_dir = _safe_project_dir(project_id)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="invalid JSON body") from None
+        try:
+            result = await asyncio.to_thread(publish_mod.publish, project_dir, body)
+        except publish_mod.PublishError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+        # The tool wrote publish_log / checkpoint_publish; nudge the board so it
+        # refetches even if the watcher is unavailable (no watchfiles installed).
+        _invalidate_summary(project_id)
+        hub.publish(project_id)
+        return result
 
     # ---- Thumbnails (downscaled, cached on disk) ------------------------
 

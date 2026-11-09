@@ -2,8 +2,41 @@
 
 export async function getJSON(url) {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`${res.status} ${url}`);
+  if (!res.ok) {
+    // Carry the server's own explanation ("render not found: …") and the
+    // status, so a caller can tell a missing FILE from a missing ROUTE — the
+    // latter means the running server predates the code on disk.
+    let detail = null;
+    try {
+      detail = (await res.json()).detail || null;
+    } catch {
+      detail = null;
+    }
+    const err = new Error(detail ? `${res.status} — ${detail}` : `${res.status} ${url}`);
+    err.status = res.status;
+    err.detail = detail;
+    throw err;
+  }
   return res.json();
+}
+
+// The board's one write path (publish only). The custom header is required by
+// the server: a cross-origin page cannot send it without a CORS preflight this
+// app never grants, so no other tab in the browser can trigger a publish.
+export async function postJSON(url, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Backlot-Publish": "1" },
+    body: JSON.stringify(body),
+  });
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
+  if (!res.ok) throw new Error((data && data.detail) || `${res.status} ${url}`);
+  return data;
 }
 
 export function el(tag, attrs = {}, ...children) {
@@ -27,6 +60,14 @@ export function fmtDuration(seconds) {
   const s = Math.max(0, Math.round(n));
   const m = Math.floor(s / 60);
   return `${m}:${String(s % 60).padStart(2, "0")}`;
+}
+
+// YouTube chapter timestamp — must match YouTubeUpload.format_timestamp.
+export function fmtChapterStamp(seconds) {
+  const s = Math.max(0, Math.floor(Number(seconds) || 0));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const mmss = `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+  return h ? `${h}:${mmss}` : mmss;
 }
 
 export function fmtMoney(v) {

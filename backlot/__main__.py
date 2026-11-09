@@ -82,7 +82,11 @@ def cmd_open(project_id: str | None) -> int:
 def cmd_serve(port: int) -> int:
     import uvicorn
 
-    uvicorn.run("backlot.server:app", host="127.0.0.1", port=port, log_level="warning")
+    # The board holds long-lived event streams open; without a cap, a shutdown
+    # waits on them forever — the port closes but the process never exits, so
+    # restarts and proxies (tailscale serve) see a dead server.
+    uvicorn.run("backlot.server:app", host="127.0.0.1", port=port, log_level="warning",
+                timeout_graceful_shutdown=3)
     return 0
 
 

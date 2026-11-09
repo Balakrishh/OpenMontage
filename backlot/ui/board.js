@@ -1,8 +1,8 @@
 // Backlot project board — renders BoardState and stays live via SSE.
 
 import {
-  STAGE_ICONS, el, fmtAgo, fmtClock, fmtDuration, fmtMoney,
-  getJSON, mediaURL, subscribe, thumbURL, waveBars,
+  STAGE_ICONS, el, fmtAgo, fmtChapterStamp, fmtClock, fmtDuration, fmtMoney,
+  getJSON, mediaURL, postJSON, subscribe, thumbURL, waveBars,
 } from "/ui/lib.js";
 
 const rawProjectPath = location.pathname.split("/p/")[1] || "";
@@ -567,6 +567,272 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal
 modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
 
 // ---------------------------------------------------------------------------
+// publish to YouTube — the board's only action that changes the world
+// ---------------------------------------------------------------------------
+
+// An upload is irreversible from here (undoing it means deleting the video on
+// YouTube), so the button never publishes on its own: it opens this dialog,
+// which shows exactly what will be sent and waits for a second, explicit click.
+
+let publishing = false;
+
+function fmtBytes(n) {
+  const bytes = Number(n);
+  if (!Number.isFinite(bytes)) return "";
+  const mb = bytes / 1048576;
+  if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`;
+  // A 0.4 MB teaser must not read as "0.0 MB".
+  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+// `Node.append(null)` inserts the literal text "null" — conditional sections
+// have to be filtered out before they reach the DOM, not passed through.
+function appendAll(node, children) {
+  node.append(...children.filter(Boolean));
+}
+
+function pubField(label, control, hint) {
+  return el("label", { class: "pub-field" },
+    el("span", { class: "pub-label" }, label),
+    control,
+    hint ? el("span", { class: "pub-hint" }, hint) : null);
+}
+
+async function openPublishModal(s, render) {
+  modal.innerHTML = "";
+  const page = el("div", { class: "modal-page publish-modal" },
+    el("div", { class: "pub-title" }, "PUBLISH TO YOUTUBE"),
+    el("div", { class: "pub-loading" }, "Reading the render…"));
+  modal.append(el("span", { class: "modal-close", onclick: closeModal }, "ESC · CLOSE"), page);
+  modal.classList.add("open");
+
+  let pre;
+  try {
+    pre = await getJSON(
+      `/api/project/${encodedProjectId}/publish/preflight?path=${encodeURIComponent(render.path)}`);
+  } catch (err) {
+    // A 404 with no server explanation means the ROUTE is missing, not the
+    // render: uvicorn does not hot-reload, so a board started before the
+    // publish endpoint existed serves the new board.js (which is no-cache)
+    // against the old Python.
+    const staleServer = err.status === 404 && !err.detail;
+    page.innerHTML = "";
+    appendAll(page, [
+      el("div", { class: "pub-title" }, "PUBLISH TO YOUTUBE"),
+      el("div", { class: "pub-error" }, String(err.message || err)),
+      staleServer ? el("div", { class: "pub-status warn" },
+        el("b", {}, "SERVER NEEDS A RESTART. "),
+        "This board is running a build that predates the publish endpoint. Stop it and run ",
+        el("code", {}, "python -m backlot serve"),
+        " again.") : null,
+    ]);
+    return;
+  }
+  drawPublishForm(page, s, render, pre);
+}
+
+function drawPublishForm(page, s, render, pre) {
+  const probe = pre.probe || {};
+  const dims = probe.width ? `${probe.width}×${probe.height}` : "unknown size";
+  const facts = [
+    render.path.split("/").pop(),
+    dims,
+    fmtDuration(probe.duration_seconds),
+    fmtBytes(pre.render.size_bytes),
+  ].filter(Boolean).join("  ·  ");
+
+  const title = el("input", { type: "text", maxlength: "100", value: pre.suggested.title || s.title || "" });
+  const description = el("textarea", { rows: "5" });
+  description.value = pre.suggested.description || "";
+  const tags = el("input", { type: "text", value: (pre.suggested.tags || []).join(", ") });
+  // One "M:SS Title" per line — the same text YouTube parses out of the
+  // description into the progress-bar timeline.
+  const chapters = el("textarea", { rows: "6", class: "pub-chapters" });
+  chapters.value = (pre.suggested.chapters || [])
+    .map((c) => `${fmtChapterStamp(c.start_seconds)} ${c.title}`).join("\n");
+  const thumbnail = el("input", { type: "text", value: pre.suggested.thumbnail_path || "",
+    placeholder: "e.g. renders/poster_frame.png" });
+  const synthetic = el("input", { type: "checkbox" });
+  synthetic.checked = pre.suggested.contains_synthetic_media !== false;
+
+  const privacy = el("select", {},
+    ...["unlisted", "private", "public"].map((v) => el("option", { value: v }, v.toUpperCase())));
+  privacy.value = (pre.defaults && pre.defaults.privacy) || "unlisted";
+
+  const shortSel = el("select", {},
+    el("option", { value: "auto" }, `AUTO — DETECTED ${pre.is_short ? "SHORT" : "FULL VIDEO"}`),
+    el("option", { value: "true" }, "SHORT (adds #Shorts)"),
+    el("option", { value: "false" }, "FULL VIDEO"));
+
+  const dryRun = el("input", { type: "checkbox" });
+  const force = el("input", { type: "checkbox" });
+
+  const status = el("div", { class: "pub-status" });
+  // Already on YouTube: the thumbnail can be set on that video without a re-upload
+  // (e.g. once the channel is verified for custom thumbnails).
+  const setThumb = el("button", { class: "pub-cancel", type: "button" }, "SET THUMBNAIL ON THIS VIDEO");
+  setThumb.onclick = async () => {
+    if (publishing || !thumbnail.value.trim()) return;
+    publishing = true;
+    setThumb.disabled = true;
+    status.className = "pub-status busy";
+    status.innerHTML = "";
+    status.append("Setting the thumbnail…");
+    try {
+      const res = await postJSON(`/api/project/${encodedProjectId}/publish/thumbnail`, {
+        confirm: true,
+        path: render.path,
+        video_id: pre.already_published && pre.already_published.video_id,
+        thumbnail_path: thumbnail.value.trim(),
+      });
+      status.className = res.success ? "pub-status" : "pub-status error";
+      status.innerHTML = "";
+      status.append(res.success ? `Thumbnail set on ${res.video_id}.` : String(res.error || "failed"));
+    } catch (err) {
+      status.className = "pub-status error";
+      status.innerHTML = "";
+      status.append(String(err.message || err));
+    } finally {
+      publishing = false;
+      setThumb.disabled = false;
+    }
+  };
+  const confirm = el("button", { class: "pub-go", type: "button" }, "UPLOAD TO YOUTUBE");
+
+  // Without credentials a real upload is impossible — but a dry run still
+  // works and is the fastest way to see what *would* be sent, so it stays
+  // reachable instead of greying out the whole dialog.
+  const blocked = !pre.credentials_ready;
+  const syncConfirm = () => {
+    confirm.disabled = blocked && !dryRun.checked;
+    confirm.textContent = dryRun.checked ? "RUN DRY RUN" : "UPLOAD TO YOUTUBE";
+  };
+  dryRun.addEventListener("change", syncConfirm);
+  if (blocked) {
+    status.className = "pub-status warn";
+    status.append(
+      el("b", {}, "NOT CONNECTED TO A CHANNEL. "),
+      `Missing ${pre.missing_env.join(", ")}. Run `,
+      el("code", {}, "python scripts/get_youtube_token.py"),
+      " once, then reopen this dialog. A dry run works without it.");
+  }
+  syncConfirm();
+
+  page.innerHTML = "";
+  appendAll(page, [
+    el("div", { class: "pub-title" }, "PUBLISH TO YOUTUBE"),
+    el("div", { class: "pub-facts" }, facts),
+    pre.probe_error ? el("div", { class: "pub-status warn" }, pre.probe_error) : null,
+    pre.hero_render && pre.hero_render !== render.path && /(^|\/)final[^/]*\.\w+$/.test(render.path)
+      ? el("div", { class: "pub-status warn" },
+        el("b", {}, "NOT THE FINISHED CUT. "),
+        `The publish stage named ${pre.hero_render} as the film. This file is another version.`) : null,
+    pre.already_published ? el("div", { class: "pub-status warn" },
+      el("b", {}, "ALREADY PUBLISHED. "),
+      "These exact bytes went up as ",
+      el("a", { href: pre.already_published.url, target: "_blank" }, pre.already_published.video_id),
+      ". Uploading again creates a second video.") : null,
+    pubField("TITLE", title, `${pre.suggested.source} · max 100 chars`),
+    pubField("DESCRIPTION", description),
+    pubField("TAGS", tags, "comma separated · max 20 / 500 chars"),
+    pubField("CHAPTERS", chapters,
+      "timeline · one “M:SS Title” per line · first at 00:00, ≥ 3, each ≥ 10s · placed at {chapters} in the description, else at the end · ignored for Shorts"),
+    pubField("THUMBNAIL", thumbnail, "project-relative PNG/JPEG ≤ 2 MB · needs a verified channel"),
+    pre.already_published ? el("div", { class: "pub-actions" }, setThumb) : null,
+    el("div", { class: "pub-row" },
+      pubField("VISIBILITY", privacy),
+      pubField("FORMAT", shortSel, `Short = portrait and ≤ ${pre.short_max_seconds}s`)),
+    el("div", { class: "pub-checks" },
+      el("label", {}, synthetic, el("span", {}, "Disclose as AI-generated (YouTube altered/synthetic content)")),
+      el("label", {}, dryRun, el("span", {}, "Dry run — build the payload, upload nothing")),
+      pre.already_published
+        ? el("label", {}, force, el("span", {}, "Upload anyway (duplicate)"))
+        : null),
+    status,
+    el("div", { class: "pub-actions" },
+      el("button", { class: "pub-cancel", type: "button", onclick: closeModal }, "CANCEL"),
+      confirm),
+    el("div", { class: "pub-foot" },
+      "Uploading is irreversible from Backlot — removing a published video is done on YouTube."),
+  ]);
+
+  confirm.onclick = async () => {
+    if (publishing) return;
+    if (pre.already_published && !force.checked && !dryRun.checked) {
+      status.className = "pub-status warn";
+      status.innerHTML = "";
+      status.append("Tick “Upload anyway” to publish a second copy, or cancel.");
+      return;
+    }
+    publishing = true;
+    confirm.disabled = true;
+    const eta = Math.round(pre.estimated_runtime_seconds || 60);
+    status.className = "pub-status busy";
+    status.innerHTML = "";
+    status.append(dryRun.checked ? "Building the payload…" : `Uploading… roughly ${eta}s for this file. Keep this tab open.`);
+    try {
+      const res = await postJSON(`/api/project/${encodedProjectId}/publish`, {
+        confirm: true,
+        path: render.path,
+        title: title.value,
+        description: description.value,
+        tags: tags.value,
+        chapters: chapters.value,
+        thumbnail_path: thumbnail.value.trim() || null,
+        contains_synthetic_media: synthetic.checked,
+        category_id: pre.suggested.category_id || (pre.defaults && pre.defaults.category_id),
+        privacy: privacy.value,
+        short: shortSel.value === "auto" ? "auto" : shortSel.value === "true",
+        dry_run: dryRun.checked,
+        force: force.checked,
+      });
+      drawPublishResult(page, res, dryRun.checked);
+    } catch (err) {
+      status.className = "pub-status error";
+      status.innerHTML = "";
+      status.append(String(err.message || err));
+      confirm.disabled = false;
+    } finally {
+      publishing = false;
+      refresh().catch(() => {});
+    }
+  };
+}
+
+function drawPublishResult(page, res, wasDryRun) {
+  page.innerHTML = "";
+  if (!res.success) {
+    page.append(
+      el("div", { class: "pub-title" }, "PUBLISH FAILED"),
+      el("div", { class: "pub-error" }, res.error || "unknown error"),
+      el("div", { class: "pub-actions" },
+        el("button", { class: "pub-cancel", type: "button", onclick: closeModal }, "CLOSE")));
+    return;
+  }
+  if (wasDryRun || res.dry_run) {
+    const payload = res.payload || {};
+    page.append(
+      el("div", { class: "pub-title" }, "DRY RUN — NOTHING UPLOADED"),
+      el("div", { class: "pub-facts" },
+        `${res.short ? "Short" : "Full video"} · ${(payload.status || {}).privacyStatus || ""}`),
+      el("pre", { class: "pub-payload" }, JSON.stringify(payload, null, 2)),
+      el("div", { class: "pub-actions" },
+        el("button", { class: "pub-cancel", type: "button", onclick: closeModal }, "CLOSE")));
+    return;
+  }
+  appendAll(page, [
+    el("div", { class: "pub-title" }, res.already_published ? "ALREADY ON YOUTUBE" : "PUBLISHED"),
+    el("div", { class: "pub-facts" },
+      `${res.short ? "Short" : "Full video"}${res.privacy ? ` · ${res.privacy}` : ""}`),
+    el("a", { class: "pub-link", href: res.url, target: "_blank" }, res.url),
+    res.warning ? el("div", { class: "pub-status warn" }, res.warning) : null,
+    el("div", { class: "pub-foot" }, "Recorded in artifacts/publish_log.json."),
+    el("div", { class: "pub-actions" },
+      el("button", { class: "pub-cancel", type: "button", onclick: closeModal }, "CLOSE")),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
 // right rail: decisions, activity
 // ---------------------------------------------------------------------------
 
@@ -845,6 +1111,12 @@ function renderRenders(s) {
       onclick: () => { activeRender = i; render(); },
     }, `${r.path.split("/").pop()}${r.at_root ? " · root" : ""}`)),
     el("span", { style: "margin-left:auto" }, `${(current.size / 1048576).toFixed(1)} MB`),
+    el("button", {
+      class: "pub-btn",
+      type: "button",
+      title: "Publish this render to YouTube",
+      onclick: () => openPublishModal(s, current),
+    }, "▶ PUBLISH TO YOUTUBE"),
   );
   return el("div", {},
     el("div", { class: "section-title" }, "Renders",
