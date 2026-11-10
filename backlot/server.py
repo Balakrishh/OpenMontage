@@ -14,6 +14,8 @@ request that does not carry an explicit confirmation.
 
 from __future__ import annotations
 
+import os
+
 import asyncio
 import json
 import time
@@ -22,11 +24,19 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from backlot import publish as publish_mod
-from backlot.state import PROJECTS_DIR, REPO_ROOT, list_projects, load_board_state, summarize_project
+from backlot.state import (
+    PROJECTS_DIR,
+    REPO_ROOT,
+    list_projects,
+    load_board_state,
+    series_from_disk,
+    summarize_project,
+)
 
 UI_DIR = Path(__file__).resolve().parent / "ui"
 
@@ -110,6 +120,7 @@ def _cached_summaries() -> list[dict]:
             except Exception:
                 cached = {
                     "project_id": entry.name, "title": entry.name,
+                    "series": series_from_disk(entry),
                     "pipeline_type": "unknown", "has_pipeline_state": False,
                     "poster": None, "live": False, "last_activity": 0,
                     "active_stage": None, "awaiting_human": False,
@@ -371,7 +382,23 @@ def create_app() -> FastAPI:
             response.headers["Cache-Control"] = "no-cache"
         return response
 
+    # Loopback binding alone does not prevent browser DNS-rebinding requests.
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts(), www_redirect=False)
     return app
+
+
+def allowed_hosts() -> list[str]:
+    """Loopback, plus any names listed in BACKLOT_ALLOWED_HOSTS (comma-separated).
+
+    Reaching the board through a private tunnel such as `tailscale serve`
+    sends the tunnel's own hostname; list it explicitly so the DNS-rebinding
+    protection stays on for every other name.
+    """
+    from lib.env_loader import load_env
+
+    load_env()
+    extra = [h.strip() for h in os.environ.get("BACKLOT_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    return ["127.0.0.1", "localhost", *extra]
 
 
 def _safe_project_dir(project_id: str) -> Path:
