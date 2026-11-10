@@ -511,7 +511,9 @@ def wall(d, p, t):
     a = p.get("show", 1)
     if a < 0.02:
         return
-    x0 = p["x"] + (1 - a) * 300  # slides in from the right
+    x0 = p["x"] + (1 - min(a, 1)) * 300  # slides in from the right
+    if x0 >= 1278:
+        return
     d.rectangle(_sc([(x0, 0), (1280, 720)]), fill=(232, 214, 190, 255))
     for yy in range(0, 720, 60):
         d.line(_sc([(x0, yy), (1280, yy)]), fill=(222, 202, 176, 255), width=SS)
@@ -1060,6 +1062,18 @@ def lens(img: Image.Image, cx, cy, r, level, mode="fibers", t=0.0, col=(230, 95,
             for k in range(-5, 6):
                 x = cx + k * 28
                 di.line(_sc([(x, top + 24), (x + 10, top - 10 * refreeze)]), fill=(255, 255, 255, 255), width=3 * SS)
+    elif mode == "scatter":  # tiny bits bounce blue light sideways; what goes straight through turns orange
+        di.rectangle(_sc([(cx - r, cy - r), (cx + r, cy + r)]), fill=(40, 45, 60, 255))
+        di.line(_sc([(cx - r, cy), (cx, cy)]), fill=(255, 255, 240, 255), width=10 * SS)
+        di.line(_sc([(cx, cy), (cx + r, cy)]), fill=mix((255, 255, 240), (255, 160, 60), level) + (255,), width=10 * SS)
+        for k in range(9):
+            px, py = cx - r * 0.5 + k * r * 0.13, cy + rng.uniform(-14, 14)
+            di.ellipse(_sc([(px - 5, py - 5), (px + 5, py + 5)]), fill=(235, 235, 235, 255))
+            if level > 0.1:
+                ang = rng.uniform(0, 2 * math.pi)
+                L = 40 + 50 * level
+                ex, ey = px + math.cos(ang) * L, py + math.sin(ang) * L
+                di.line(_sc([(px, py), (ex, ey)]), fill=(110, 160, 255, 255), width=4 * SS)
     elif mode == "push":
         bx = cx + r * 0.1 + level * r * 0.25
         di.ellipse(_sc([(bx - 70, cy - 50), (bx + 70, cy + 50)]), fill=(214, 40, 52, 255))

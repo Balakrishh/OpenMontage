@@ -20,8 +20,8 @@ walking-water:
     - {id: cupR, type: container, kind: cup, x: 900, y: 590, hidden: true}
     - {id: stripL, type: strip, color: red, shown: 0, points: [[365, 565], [390, 295], [470, 220], [535, 295], [565, 565]]}
     - {id: stripR, type: strip, color: yellow, shown: 0, points: [[815, 565], [790, 295], [710, 220], [645, 295], [615, 565]]}
-    - {id: towel1, type: towel, x: 1060, y: 680, long: true, hidden: true, label: "2 paper towels", label_at: [1150, 640]}
-    - {id: towel2, type: towel, x: 1230, y: 700, long: true, hidden: true}
+    - {id: towel1, type: towel, x: 1050, y: 670, s: 0.8, long: true, hidden: true, label: "2 paper towels", label_at: [1100, 625]}
+    - {id: towel2, type: towel, x: 1170, y: 700, s: 0.8, long: true, hidden: true}
     - {id: jug, type: pourer, kind: jug, x: 1150, y: 590, s: 0.7, color: water, hidden: true, label: "water", label_at: [1150, 250]}
   beats:
     materials:
@@ -39,7 +39,8 @@ walking-water:
       - {fx: drops, by: dropR, into: cupL, at: red, dur: 4.0, set: {cupL.c0: red}}
       - {fx: drops, by: dropY, into: cupR, at: yellow+1.5, dur: 4.0, set: {cupR.c0: yellow}}
     step4:
-      - {at: fold, dur: 2.6, set: {towel1.fold: 1, towel2.fold: 1}, sfx: whoosh}
+      - {fx: move, at: fold, dur: 1.4, set: {towel1.x: 470, towel1.y: 690, towel1.s: 1.1, towel2.x: 760, towel2.y: 690, towel2.s: 1.1}}
+      - {at: fold+1.5, dur: 3.0, set: {towel1.fold: 1, towel2.fold: 1}, sfx: whoosh}
     step5:
       - {at: put, hide: [towel1, towel2]}
       - {at: end, dur: 2.4, set: {stripL.shown: 1}, sfx: whoosh}
@@ -48,6 +49,7 @@ walking-water:
       - {fx: clock, at: wait, to: "+2.4", minutes: 60, set: {}}
       - {at: wait, to: "+2.4", set: {stripL.wick: 0.55, stripR.wick: 0.55}}
     watch:
+      - {at: start, hide: [jug, dropR, dropY]}
       - {at: start, to: 1.0, set: {stripL.wick: 1, stripR.wick: 1}}
     observe:
       - {fx: drip, into: cupM, at: drips, to: orange+1.0, from: [[565, 520], [615, 520]], colors: [red, yellow], every: 0.6}
@@ -831,7 +833,7 @@ sunset-glass:
   parts:
     - {id: room, type: dark, amount: 0}
     - {id: beam1, type: beam, x: 300, y: 430, x2: 640, y2: 430, on: 0, spread0: 16, spread: 50}
-    - {id: beam2, type: beam, x: 640, y: 430, x2: 1180, y2: 430, on: 0, spread0: 50, spread: 70, color: [255, 246, 200]}
+    - {id: beam2, type: beam, x: 640, y: 430, x2: 1180, y2: 430, on: 0, spread0: 50, spread: 55, color: [255, 246, 200]}
     - {id: blueglow, type: glow, x: 640, y: 440, r: 120, color: [120, 170, 255], show: 0}
     - {id: orangeglow, type: glow, x: 1120, y: 430, r: 70, color: [255, 150, 60], show: 0}
     - {id: glass, type: container, kind: glass, x: 640, y: 600, s: 1.0, hidden: true, label: "clear glass", label_at: [640, 645]}
@@ -852,24 +854,25 @@ sunset-glass:
     step2:
       - {fx: drops, by: dropM, into: glass, at: stir, dur: 4.0, lift: 10, n: 3, cloud: false, set: {glass.milky: 0.55}}
     step3:
+      - {at: dark, hide: [jug, dropM]}
       - {at: dark, dur: 1.5, set: {room.amount: 1}}
       - {at: shine, dur: 1.0, set: {torch.on: 1, beam1.on: 0.8, beam2.on: 0.6}, sfx: pop}
     step4:
       - {at: side, dur: 0.8, set: {eye.show: 1}, sfx: pop}
       - {at: side, dur: 1.2, set: {blueglow.show: 1}}
       - {fx: move, at: straight, dur: 1.8, set: {eye.x: 1120, eye.y: 330}}
-      - {at: straight+1.2, dur: 1.2, set: {orangeglow.show: 1, beam2.color: [255, 190, 110]}}
+      - {at: straight+1.2, dur: 1.2, set: {orangeglow.show: 1, beam2.color: [255, 196, 70]}}
     watch: []
     observe:
       - {at: blue, dur: 0.8, set: {blueglow.r: 140}}
-      - {at: orange, dur: 0.8, set: {orangeglow.r: 95, beam2.color: [255, 165, 80]}}
+      - {at: orange, dur: 0.8, set: {orangeglow.r: 95, beam2.color: [255, 170, 40]}}
     explain: []
   explain:
-    lens: light
+    lens: scatter
     color: water
     anchor: [640, 430]
-    from: start
-    to: 0.4
+    from: tiny
+    to: 0.6
     captions:
       - {title: "White light", sub: "A mix of all colors."}
       - {at: tiny, title: "Scattering", sub: "Tiny bits bounce blue light around the most."}
