@@ -394,10 +394,13 @@ def allowed_hosts() -> list[str]:
     sends the tunnel's own hostname; list it explicitly so the DNS-rebinding
     protection stays on for every other name.
     """
-    from lib.env_loader import load_env
-
-    load_env()
-    extra = [h.strip() for h in os.environ.get("BACKLOT_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    raw = os.environ.get("BACKLOT_ALLOWED_HOSTS")
+    if raw is None:  # read just this key from .env; don't load the whole file into the process
+        env_file = REPO_ROOT / ".env"
+        lines = env_file.read_text(encoding="utf-8").splitlines() if env_file.is_file() else []
+        raw = next((ln.split("=", 1)[1].strip().strip("'\"") for ln in lines
+                    if ln.strip().startswith("BACKLOT_ALLOWED_HOSTS=")), "")
+    extra = [h.strip() for h in raw.split(",") if h.strip()]
     return ["127.0.0.1", "localhost", *extra]
 
 

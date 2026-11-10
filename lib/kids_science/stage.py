@@ -37,6 +37,7 @@ BOYS = Path(__file__).parent / "assets"
 VOICE_SPEED = 0.85        # slower than the series default, for young viewers
 GAP = 0.6                 # breath between lines
 HOLD = {"hook": 1.0, "hello": 0.8, "materials": 2.0, "watch": 1.5, "observe": 3.0, "explain": 2.0, "bye": 2.0}
+SERIES = "Quick Science with Arjun & Dev"  # groups the episodes into one card on the Backlot board
 STEP_HOLD = 2.6           # after every step: the change stays on screen while kids take it in
 MAX_LINE_ERROR = 0.2
 
@@ -742,7 +743,7 @@ class Episode:
             "entries": [{"platform": "local_export", "status": "exported", "export_path": str(video),
                          "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}],
             "metadata": {"suggested_title": title, "suggested_description": description, "suggested_tags": tags,
-                         "suggested_chapters": [], "suggested_category_id": "27",
+                         "suggested_chapters": [], "suggested_category_id": "27", "suggested_made_for_kids": True,
                          "suggested_thumbnail": str(thumb.relative_to(self.out)), "contains_synthetic_media": True,
                          "hero_output": f"projects/{self.out.name}/{video.relative_to(self.out).as_posix()}",
                          "copy_policy": "engagement only: no tools, models or production tech named",
@@ -750,4 +751,5 @@ class Episode:
         }, indent=2, ensure_ascii=False), encoding="utf-8")
         (self.out / "project.json").write_text(json.dumps({"version": "1.0", "project_id": self.out.name,
                                                            "title": f"{ex['title']} (Quick Science, drawn)",
+                                                           "series": SERIES,
                                                            "pipeline_type": "kids-science-story"}))

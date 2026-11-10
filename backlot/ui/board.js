@@ -658,6 +658,8 @@ function drawPublishForm(page, s, render, pre) {
     placeholder: "e.g. renders/poster_frame.png" });
   const synthetic = el("input", { type: "checkbox" });
   synthetic.checked = pre.suggested.contains_synthetic_media !== false;
+  const forKids = el("input", { type: "checkbox" });
+  forKids.checked = pre.suggested.made_for_kids === true;
 
   const privacy = el("select", {},
     ...["unlisted", "private", "public"].map((v) => el("option", { value: v }, v.toUpperCase())));
@@ -748,6 +750,7 @@ function drawPublishForm(page, s, render, pre) {
       pubField("FORMAT", shortSel, `Short = portrait and ≤ ${pre.short_max_seconds}s`)),
     el("div", { class: "pub-checks" },
       el("label", {}, synthetic, el("span", {}, "Disclose as AI-generated (YouTube altered/synthetic content)")),
+      el("label", {}, forKids, el("span", {}, "Made for kids (required for content aimed at children)")),
       el("label", {}, dryRun, el("span", {}, "Dry run — build the payload, upload nothing")),
       pre.already_published
         ? el("label", {}, force, el("span", {}, "Upload anyway (duplicate)"))
@@ -784,6 +787,7 @@ function drawPublishForm(page, s, render, pre) {
         chapters: chapters.value,
         thumbnail_path: thumbnail.value.trim() || null,
         contains_synthetic_media: synthetic.checked,
+        made_for_kids: forKids.checked,
         category_id: pre.suggested.category_id || (pre.defaults && pre.defaults.category_id),
         privacy: privacy.value,
         short: shortSel.value === "auto" ? "auto" : shortSel.value === "true",

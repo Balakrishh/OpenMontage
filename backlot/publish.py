@@ -147,6 +147,7 @@ def suggest_metadata(project_dir: Path, video_path: Path) -> dict[str, Any]:
                 "thumbnail_path": meta.get("suggested_thumbnail"),
                 "contains_synthetic_media": meta.get("contains_synthetic_media"),
                 "category_id": str(meta.get("suggested_category_id") or "24"),
+                "made_for_kids": bool(meta.get("suggested_made_for_kids", False)),
                 "source": "previous publish",
             }
 
@@ -209,6 +210,8 @@ def _suggestion(data: dict[str, Any], meta: dict[str, Any], source: str) -> dict
         "thumbnail_path": data.get("thumbnail_path"),
         "contains_synthetic_media": meta.get("contains_synthetic_media"),
         "category_id": str(data.get("category_id") or meta.get("suggested_category_id") or "24"),
+        # Content for children must be declared made-for-kids on YouTube (COPPA).
+        "made_for_kids": bool(meta.get("suggested_made_for_kids", False)),
         "source": source,
     }
 

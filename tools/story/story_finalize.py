@@ -217,6 +217,7 @@ class StoryFinalize(BaseTool):
         meta = {
             "suggested_title": yt_title, "suggested_description": description, "suggested_tags": tags,
             "suggested_chapters": chapters, "suggested_category_id": "27",  # Education
+            "suggested_made_for_kids": True,  # aimed at children: YouTube requires the flag (COPPA)
             "suggested_thumbnail": str(thumb.relative_to(project)), "contains_synthetic_media": True,
             "hero_output": f"projects/{project.name}/{out_video.relative_to(project).as_posix()}",
             "copy_policy": "engagement only: no tools, models or production tech named",

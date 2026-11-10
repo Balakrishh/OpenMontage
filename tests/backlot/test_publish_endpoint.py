@@ -378,3 +378,10 @@ class TestSetThumbnail:
                           json={"confirm": True, "path": "renders/final.mp4", "thumbnail_path": self._thumb(project)})
         assert res.status_code == 200 and res.json()["success"] is True
         assert seen["operation"] == "set_thumbnail" and seen["video_path"].endswith("renders/final.mp4")
+
+
+def test_made_for_kids_suggestion_comes_from_publish_metadata():
+    from backlot.publish import _suggestion
+
+    assert _suggestion({"title": "t"}, {"suggested_made_for_kids": True}, "s")["made_for_kids"] is True
+    assert _suggestion({"title": "t"}, {}, "s")["made_for_kids"] is False
