@@ -230,7 +230,7 @@ def test_step_beats_carry_the_authored_state_of_where_they_end():
     # step2 adds the coloring (library step 3): red left, yellow right, middle still empty.
     assert any("middle cup is empty" in f for f in ks.beat_state(exp, "step2"))
     assert any("red" in f for f in ks.beat_state(exp, "step2"))
-    assert any("empty" in f for f in ks.beat_state(exp, "materials"))
+    assert any("nothing inside" in f for f in ks.beat_state(exp, "materials"))
     assert ks.beat_state(exp, "hook") == []
 
 
@@ -353,3 +353,113 @@ def test_similarity_gate_catches_a_pattern_washing_over_the_frame(tmp_path):
                         "-pix_fmt", "yuv420p", str(tmp_path / name)], check=True)
     assert similarity_to_still(still, tmp_path / "same.mp4", 0.5) > 0.9
     assert similarity_to_still(still, tmp_path / "broken.mp4", 0.5) < MIN_SIMILARITY
+
+
+class TestQuickScience:
+    def test_every_word_comes_from_the_library(self, tmp_path):
+        import json
+
+        from tools.story.quick_episode_planner import QuickEpisodePlanner
+
+        exp = ks.experiment("walking-water")
+        r = QuickEpisodePlanner().execute({"experiment_id": exp["id"], "project_dir": str(tmp_path)})
+        assert r.success, r.error
+        script = json.loads((tmp_path / "artifacts" / "script.json").read_text())
+        text = " ".join(sec["text"] for sec in script["sections"]).lower()
+        assert exp["question"].lower() in text and exp["observe"].lower() in text
+        assert all(step[1:].lower() in text for step in exp["steps"])  # every step, verbatim
+        assert script["sections"][0]["id"] == "hook"  # the question comes first
+
+    def test_result_first_and_experiment_only_pictures(self, tmp_path):
+        import json
+
+        from lib.kids_science import quick
+
+        beats, shots, lines = quick.plan(ks.experiment("walking-water"))
+        by_id = {s["id"]: s for s in shots}
+        assert shots[0]["kind"] == "reuse" and shots[0]["reuse_of"] == "observe-1"  # payoff first
+        assert by_id["watch-1"]["kind"] == "blend"  # the time-lapse is a dissolve, never generated
+        people = [s for s in shots if s.get("characters")]
+        assert {s["beat"] for s in people} == {"hello", "bye"}  # the boys only say hi and bye
+        plates = [s for s in shots if s["kind"] == "plate"]
+        assert len(plates) == len(ks.experiment("walking-water")["steps"]) + 2
+        assert all("lavender" in p["backdrop"] for p in plates)
+        for sh in shots:  # every shot is valid for the image stage
+            ks.ShotSpec(**sh)
+
+    def test_text_band_keeps_the_experiment_uncovered(self, tmp_path):
+        from PIL import Image
+
+        from tools.story.story_keyframes import text_band
+
+        src = tmp_path / "plate.png"
+        Image.new("RGB", (640, 360), (40, 120, 200)).save(src)
+        out = tmp_path / "out.png"
+        text_band(src, "Step 2\nFill the two outside cups with water.", out)
+        img = Image.open(out).convert("RGB")
+        assert img.size == (640, 360)
+        assert img.getpixel((320, 10)) != (40, 120, 200)   # band on top
+        assert img.getpixel((320, 340)) == (40, 120, 200)  # picture below, untouched
+
+
+def test_change_animation_moves_only_what_the_step_changed(tmp_path):
+    import subprocess
+
+    import numpy as np
+    from PIL import Image, ImageDraw
+
+    from tools.story.quick_motion import animate
+
+    before = Image.new("RGB", (320, 180), (230, 225, 240))
+    d = ImageDraw.Draw(before)
+    for x in (40, 140, 240):
+        d.rectangle((x, 60, x + 40, 160), outline=(150, 150, 150), width=2)  # three empty cups
+    after = before.copy()
+    ImageDraw.Draw(after).rectangle((142, 100, 178, 158), fill=(240, 140, 30))  # middle cup fills orange
+    a, b = tmp_path / "a.png", tmp_path / "b.png"
+    before.save(a)
+    after.save(b)
+    out = tmp_path / "rise.mp4"
+    assert animate(a, b, out, seconds=2.0)
+
+    def frame(t):
+        raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(t), "-i", str(out), "-frames:v", "1",
+                              "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
+        return np.frombuffer(raw, np.uint8).reshape(180, 320, 3).astype(int)
+
+    mid, end = frame(0.9), frame(1.95)
+    left_cup = (slice(100, 158), slice(42, 78))
+    assert np.abs(mid[left_cup] - np.asarray(before)[left_cup]).max() < 25   # untouched cup never moves
+    assert end[150, 160, 0] > 200 and end[150, 160, 2] < 90                   # the middle cup ends orange
+    lower, upper = mid[150, 160], mid[104, 160]
+    assert np.abs(lower - [240, 140, 30]).sum() < np.abs(upper - [240, 140, 30]).sum()  # fills bottom-up
+
+    same = tmp_path / "same.mp4"
+    assert animate(a, a, same) is False  # a step that changed nothing gets no animation
+
+
+def test_container_invariants_hold_on_every_plate():
+    from lib.kids_science import quick
+
+    exp = ks.experiment("walking-water")
+    always = exp["states"]["always"][0]
+    _, shots, _ = quick.plan(exp)
+    for sh in shots:
+        if sh["kind"] == "plate":
+            assert always in sh["state"], sh["id"]
+            assert f"Scene state: {always}." in ks.ShotSpec(**sh).checklist()
+    assert always in ks.beat_state(exp, "step3")  # story episodes too
+
+
+def test_resume_key_follows_the_source_picture_content_not_its_name(tmp_path):
+    from PIL import Image
+
+    from tools.story.story_keyframes import spec_key
+
+    shot = ks.ShotSpec(id="step6-1", beat="step6", kind="plate", description="", characters=[], props=[],
+                       state=["x"], action="wait")
+    src = tmp_path / "step5-1-a1.png"
+    Image.new("RGB", (8, 8), "red").save(src)
+    k1 = spec_key(shot, shot.checklist(), [], src)
+    Image.new("RGB", (8, 8), "blue").save(src)  # regenerated under the same file name
+    assert spec_key(shot, shot.checklist(), [], src) != k1

@@ -173,12 +173,15 @@ class StoryFinalize(BaseTool):
 
         # ---- Export + publish copy ------------------------------------
         title = bible["episode_title"].strip()
-        yt_title = f"{title} | {ks.series()['series']['name']}"[:100]
+        quick = bible.get("format") == "quick"
+        yt_title = (f"{exp['question']} 🧪 | Quick Science with {' & '.join(c['name'] for c in ks.series()['cast'].values())}"
+                    if quick else f"{title} | {ks.series()['series']['name']}")[:100]
         windows = edit["metadata"]["beat_windows"]
         # The title card belongs to the first beat's chapter (it's under 10s on its own).
-        chapters = [{"start_seconds": 0, "title": ks.beats()[0]["title"]}]
+        episode = ks.episode_beats(script)
+        chapters = [{"start_seconds": 0, "title": episode[0]["title"]}]
         steps = bible["assigned_steps"]
-        for b in ks.beats()[1:]:
+        for b in episode[1:]:
             label = b["title"]
             if b["id"] in steps and not steps[b["id"]][0].startswith("("):
                 first = steps[b["id"]][0].rstrip(".")
@@ -186,6 +189,8 @@ class StoryFinalize(BaseTool):
             t = int(float(windows[b["id"]][0]) + 0.999)
             if t - chapters[-1]["start_seconds"] >= 10 and expected - t >= 10:
                 chapters.append({"start_seconds": t, "title": label})
+        if quick:
+            chapters = []  # too short for YouTube's timeline (>=3 chapters of >=10 s)
         topic_tag = "#" + re.sub(r"[^a-z]", "", exp["id"].split("-")[0])
         names = [c["name"] for c in ks.series()["cast"].values()]
         duo = " and ".join(names)
@@ -197,7 +202,7 @@ class StoryFinalize(BaseTool):
             f"What do you think will happen? Tell us in the comments before {names[0]} explains!",
             f"Safety first: {exp['safety']} Always do experiments with a grown-up.",
             f"Subscribe for a new science story with {duo}.",
-            "Chapters:\n{chapters}",
+            *([] if quick else ["Chapters:\n{chapters}"]),
             " ".join(HASHTAGS + [topic_tag]),
         ])
         tags = ["kids science", "science experiment for kids", "story time", "STEM for kids", "science for kids",

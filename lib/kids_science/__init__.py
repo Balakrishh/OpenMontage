@@ -53,15 +53,16 @@ def beat_state(exp: dict[str, Any], beat_id: str) -> list[str]:
     mid-action, but they must never contradict where the beat ends up.
     """
     states = exp.get("states") or {}
+    always = list(states.get("always", []))
     if beat_id in ("materials", "observe"):
-        return list(states.get(beat_id, []))
+        return always + list(states.get(beat_id, []))
     if beat_id in STEP_BEATS:
         assigned = [s for s in assign_steps(exp)[beat_id] if not s.startswith("(")]
         if not assigned:  # a "watch closely" beat keeps the previous state
             idx = len(exp["steps"])
         else:
             idx = exp["steps"].index(assigned[-1]) + 1
-        return list(states.get(str(idx), []))
+        return always + list(states.get(str(idx), []))
     return []
 
 
@@ -80,6 +81,13 @@ def experiment(experiment_id: str) -> dict[str, Any]:
 
 def beats() -> list[dict[str, Any]]:
     return list(series()["beats"])
+
+
+def episode_beats(script: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """The beat order of THIS episode: a format may define its own (Quick Science),
+    otherwise the series' story beats."""
+    custom = ((script or {}).get("metadata") or {}).get("beats")
+    return list(custom) if custom else beats()
 
 
 # Beats whose content is capped by the library (facts, materials, steps). A
@@ -407,6 +415,11 @@ class ShotSpec:
     lines: list[int] = field(default_factory=list)  # indices into the beat's narration lines
     words: str = ""  # the narration spoken over this picture
     motion: bool = False
+    overlay: str = ""      # exact text drawn onto the final still (never generated)
+    backdrop: str = ""     # plates: replaces the kitchen-table setting (e.g. a clean studio backdrop)
+    reuse_of: str = ""     # kind "reuse": show this other shot's approved picture
+    blend_from: str = ""   # kind "blend": a dissolve between two approved pictures (a safe time-lapse)
+    blend_to: str = ""
 
     def _hands_allowed(self) -> bool:
         return any("hand" in f for f in self.state)
@@ -418,8 +431,9 @@ class ShotSpec:
         s = series()
         parts = [s["style"]["image"]]
         if self.kind == "plate":
+            where = self.backdrop or "on a wooden kitchen table in a sunlit kitchen"
             parts.append(
-                "Close-up of a science experiment on a wooden kitchen table in a sunlit kitchen, seen from the "
+                f"Close-up of a science experiment {where}, seen from the "
                 "front at table height, everything clearly visible and evenly spaced."
             )
             if not self._hands_allowed():

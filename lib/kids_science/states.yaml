@@ -8,18 +8,22 @@
 #   <n>       — after step n of the experiment's `steps` list (1-based)
 #   observe   — the result beat
 # Keep each fact short, visual and countable. Max 3 per point.
+#   always   — (optional) facts true at EVERY point: the containers themselves.
+#              Edit chains drift (clear cups became mugs); this holds them.
 
 walking-water:
-  materials: ["three clear cups that are all completely empty and dry", "two paper towels lie flat on the table beside the cups"]
+  always: ["all three containers are identical clear see-through plastic cups with no handles"]
+  materials: ["three clear cups with nothing inside them", "two flat white paper sheets lie on the table beside the cups"]
   1: ["exactly three clear cups stand in a row", "all three cups are empty"]
   2: ["exactly three clear cups in a row", "the left and right cups hold clear water", "the middle cup is empty"]
   3: ["the left cup holds red water and the right cup holds yellow water", "the middle cup is empty"]
-  4: ["the left cup is red, the right cup is yellow, the middle cup is empty", "paper towels are folded into long strips"]
+  4: ["the left cup is red, the right cup is yellow, the middle cup is empty", "paper towels are folded into long strips", "no paper towel is inside any cup yet"]
   5: ["paper towel strips bridge from the red cup and the yellow cup into the middle cup", "the middle cup is empty"]
   6: ["paper towel strips bridge from the red cup and the yellow cup into the middle cup", "the middle cup is still empty or almost empty"]
-  observe: ["the middle cup holds orange water", "the paper towel strips are colored red and yellow"]
+  observe: ["the middle cup holds orange water", "colored paper towel strips bridge from the left and right cups into the middle cup", "the left cup is still red and the right cup is still yellow"]
 
 fizzy-volcano:
+  always: ["the bottle is a small clear plastic bottle"]
   materials: ["the plastic bottle is empty and stands on a tray", "no foam anywhere"]
   1: ["a small plastic bottle stands on a tray", "no foam anywhere"]
   2: ["white baking soda powder is in the bottle", "no foam anywhere"]
@@ -36,6 +40,7 @@ static-balloon:
   observe: ["the balloon stays on the wall with nobody holding it"]
 
 density-tower:
+  always: ["the container is one tall clear drinking glass with no handle"]
   materials: ["one tall clear glass that is empty", "the liquids are still in their own containers"]
   1: ["a golden honey layer sits at the bottom of the tall glass", "nothing else is in the glass"]
   2: ["two layers in the glass: honey at the bottom and soap above it"]
@@ -45,6 +50,7 @@ density-tower:
   observe: ["four separate stacked layers, with yellow oil floating on top"]
 
 floating-egg:
+  always: ["the container is one tall clear drinking glass with no handle"]
   materials: ["one egg outside the glass", "the salt is still in its container"]
   1: ["a tall glass half full of clear water", "the egg is not in the glass"]
   2: ["the egg rests at the bottom of the glass of water"]
@@ -53,6 +59,7 @@ floating-egg:
   observe: ["the egg floats in the water, not on the bottom"]
 
 rainbow-milk:
+  always: ["the container is one shallow round white plate"]
   materials: ["the plate is empty", "no colors are on any plate"]
   1: ["a shallow plate covered with white milk", "no colors in the milk yet"]
   2: ["separate drops of red, blue and yellow sit in the middle of the white milk", "the colors are not swirled"]
@@ -61,6 +68,7 @@ rainbow-milk:
   observe: ["the colors burst outward and swirl across the milk"]
 
 pepper-scatter:
+  always: ["the container is one shallow round white bowl"]
   materials: ["the bowl is empty", "no pepper on any water"]
   1: ["a shallow bowl of clear water", "no pepper in the water yet"]
   2: ["black pepper flakes float all over the water surface"]
@@ -77,6 +85,7 @@ lemon-invisible-ink:
   observe: ["light brown letters have appeared on the paper"]
 
 colored-celery:
+  always: ["both containers are identical clear drinking glasses with no handles"]
   materials: ["the glasses are empty", "the celery is still green everywhere"]
   1: ["two clear glasses of clear water"]
   2: ["one glass of blue water and one glass of red water"]
@@ -85,6 +94,7 @@ colored-celery:
   observe: ["the celery leaf edges are tinted blue in one glass and red in the other"]
 
 glass-rainbow:
+  always: ["the container is one clear drinking glass with no handle"]
   materials: ["the glass is empty", "the paper is plain white"]
   1: ["a clear glass filled to the top with water"]
   2: ["the glass of water stands in bright light by a window"]
@@ -93,6 +103,7 @@ glass-rainbow:
   observe: ["a small band of rainbow colors shows on the white paper"]
 
 lava-lamp:
+  always: ["the container is one tall clear plastic bottle"]
   materials: ["the bottle is empty", "the fizzy tablet is still whole and out of the bottle"]
   1: ["a clear bottle about a quarter full of clear water"]
   2: ["a clear bottle with a layer of yellow oil above a layer of water"]
@@ -101,6 +112,7 @@ lava-lamp:
   observe: ["blue bubbly blobs rise up through the yellow oil"]
 
 candy-rainbow:
+  always: ["the plate is one round flat white plate"]
   materials: ["the plate is empty and white", "the candies are in a pile or bag"]
   1: ["round colored candies in a circle around the edge of a white plate", "the middle of the plate is dry and white"]
   2: ["warm clear water poured into the middle of the plate touches every candy", "no color stripes yet"]
@@ -116,6 +128,7 @@ balloon-rocket:
   observe: ["the balloon has zoomed along the string away from where it started"]
 
 ice-fishing:
+  always: ["the container is one clear drinking glass with no handle"]
   materials: ["the glass has no ice cube in it", "the string is loose on the table"]
   1: ["one ice cube floats in a clear glass of water"]
   2: ["one end of a string lies across the top of the floating ice cube"]
@@ -124,6 +137,7 @@ ice-fishing:
   observe: ["the ice cube hangs from the string above the water"]
 
 dancing-raisins:
+  always: ["the container is one tall clear drinking glass with no handle"]
   materials: ["the glass is empty", "the raisins are outside the glass"]
   1: ["a tall glass of clear bubbly fizzy water", "no raisins in the glass"]
   2: ["a few raisins in the glass of fizzy water"]
@@ -131,6 +145,7 @@ dancing-raisins:
   observe: ["some raisins are floating near the top and some are at the bottom"]
 
 oobleck:
+  always: ["the container is one white mixing bowl"]
   materials: ["the mixing bowl is empty", "the cornstarch is in its box"]
   1: ["dry white cornstarch powder in a mixing bowl"]
   2: ["thick white goo in the bowl being stirred"]
@@ -139,6 +154,7 @@ oobleck:
   observe: ["white goo dripping from fingers into the bowl"]
 
 paperclip-float:
+  always: ["the container is one clear round bowl"]
   materials: ["the bowl is empty", "the paper clip lies on the table"]
   1: ["a clear bowl of water"]
   2: ["a small square of tissue lies flat on the water"]
@@ -147,6 +163,7 @@ paperclip-float:
   observe: ["the paper clip floats on the water surface by itself"]
 
 sunset-glass:
+  always: ["the container is one clear drinking glass with no handle"]
   materials: ["the glass is empty", "the flashlight is off"]
   1: ["a clear glass of clear water"]
   2: ["the water in the glass is slightly cloudy"]
@@ -163,6 +180,7 @@ bean-sprout:
   observe: ["the beans have small white roots growing down and green shoots growing up"]
 
 needle-compass:
+  always: ["the container is one shallow bowl"]
   materials: ["the needle is not in the cork", "the bowl holds no cork"]
   1: ["a grown-up's hands stroke a needle with a magnet", "no needle near a child's hands"]
   2: ["a needle pushed through a small piece of cork, held by a grown-up"]

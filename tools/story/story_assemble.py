@@ -135,11 +135,21 @@ class StoryAssemble(BaseTool):
         renders = project / "renders"
         renders.mkdir(exist_ok=True)
         card = project / "assets" / "images" / "title_card.png"
-        title_card(Path(images[shots[0]["id"]]), bible["episode_title"], s["series"]["name"], card, size)
+        # The first shot may carry a text band (Quick Science); use the result's clean picture behind the title.
+        qa_path = art / "keyframe_qa.json"
+        clean = None
+        if qa_path.is_file():
+            qa = json.loads(qa_path.read_text())["shots"]
+            first = qa.get(shots[0]["id"]) or {}
+            src_id = first.get("source_shot")
+            clean = (qa.get(src_id) or {}).get("source") if src_id else first.get("source")
+        title_card(Path(clean or images[shots[0]["id"]]), bible["episode_title"], s["series"]["name"], card, size)
 
         narr_total = float(timing["duration_seconds"])
         total = TITLE_SECONDS + narr_total + TAIL_SECONDS
-        beat_ids = [b["id"] for b in ks.beats()]
+        script = json.loads((art / "script.json").read_text(encoding="utf-8"))
+        quick = (script.get("metadata") or {}).get("format") == "quick"
+        beat_ids = [b["id"] for b in ks.episode_beats(script)]
         starts = [TITLE_SECONDS + timing["beats"][b]["start"] for b in beat_ids]
         # A beat's pictures run from its first word to the next beat's first word.
         windows = [(starts[i] if i else TITLE_SECONDS, starts[i + 1] if i + 1 < len(starts) else total)
@@ -163,7 +173,21 @@ class StoryAssemble(BaseTool):
                     cuts[-1]["out_seconds"] = round(t1, 3)
                     continue
                 cut = {"id": sh["id"], "source": images[sh["id"]], "in_seconds": round(t0, 3),
-                       "out_seconds": round(t1, 3), "animation": MOTIONS[k % len(MOTIONS)]}
+                       "out_seconds": round(t1, 3),
+                       # Quick Science frames carry text bands: gentle moves only, so nothing is cropped.
+                       "animation": ("parallax" if k % 2 else "zoom-in") if quick else MOTIONS[k % len(MOTIONS)]}
+                if sh.get("kind") == "blend":
+                    # A safe time-lapse: dissolve from the last step's approved picture to the result's.
+                    clip = Path(images[sh["id"]]).with_name(f"{sh['id']}-blend.mp4")
+                    dur = max(1.5, t1 - t0)
+                    fade = max(0.8, dur - 1.2)
+                    subprocess.run(["ffmpeg", "-y", "-v", "error",
+                                    "-loop", "1", "-t", f"{dur:.2f}", "-i", images[sh["blend_from"]],
+                                    "-loop", "1", "-t", f"{dur:.2f}", "-i", images[sh["blend_to"]],
+                                    "-filter_complex", f"[0][1]xfade=transition=fade:duration={fade:.2f}:offset=0.6,"
+                                                       "format=yuv420p", "-r", "30", "-t", f"{dur:.2f}", str(clip)],
+                                   check=True, capture_output=True)
+                    cut.update(source=str(clip), animation="static")
                 if sh["id"] in clips:
                     # Animated shot: hold the clip's last frame for the rest of the shot.
                     padded = Path(clips[sh["id"]]).with_name(f"{sh['id']}-cut.mp4")
@@ -177,6 +201,8 @@ class StoryAssemble(BaseTool):
         offset = int(TITLE_SECONDS * 1000)
         words = [{**w, "startMs": w["startMs"] + offset, "endMs": w["endMs"] + offset} for w in captions]
 
+        if (script.get("metadata") or {}).get("captions") is False:
+            words = []  # Quick Science shows exact step text instead of read-along captions
         props = {
             "cuts": cuts, "captions": words, "renderer_family": "explainer-data",
             "playbook": inputs.get("playbook", "anime-ghibli"),

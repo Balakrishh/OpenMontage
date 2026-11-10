@@ -45,6 +45,8 @@ def main() -> int:
     parser.add_argument("--project-id")
     parser.add_argument("--resume", action="store_true", help="skip stages already completed")
     parser.add_argument("--list", action="store_true", help="list experiments and exit")
+    parser.add_argument("--format", choices=["story", "quick"], default="story",
+                        help="story: 5-min Arjun & Dev episode; quick: 60-120 s experiment-first episode")
     args = parser.parse_args()
 
     if args.list or not args.experiment:
@@ -53,7 +55,7 @@ def main() -> int:
         return 0
 
     exp = ks.experiment(args.experiment)
-    project_id = args.project_id or f"kids-{exp['id']}"
+    project_id = args.project_id or (f"kids-quick-{exp['id']}" if args.format == "quick" else f"kids-{exp['id']}")
     project = PROJECTS / project_id
     if not (project / "project.json").exists():
         init_project(project_id, title=exp["title"], pipeline_type=PIPELINE)
@@ -77,7 +79,9 @@ def main() -> int:
         # Per-tool resume: a stage like "assets" runs several long tools; a run
         # stopped in the middle of one must not redo the ones that finished.
         marker = project / "artifacts" / f".done-{tool_name}.json"
-        if args.resume and marker.is_file():
+        # The Quick Science planner is instant and deterministic: always re-run it,
+        # so edits to the library's facts can never be skipped by --resume.
+        if args.resume and marker.is_file() and tool_name != "quick_episode_planner":
             print(f"    {tool_name}: already done, skipping (--resume)", flush=True)
             return json.loads(marker.read_text())
         t0 = time.time()
@@ -103,13 +107,20 @@ def main() -> int:
               "once for the series (see skills/pipelines/kids-science-story/director.md). "
               "Stages before edit will still run.", flush=True)
     if not (done("idea") and done("script") and done("scene_plan")):
-        run("kids_story_writer", "script", experiment_id=exp["id"])
+        if args.format == "quick":
+            run("quick_episode_planner", "script", experiment_id=exp["id"])
+        else:
+            run("kids_story_writer", "script", experiment_id=exp["id"])
         checkpoint("idea", "brief")
         checkpoint("script", "script")
         checkpoint("scene_plan", "scene_plan")
     if not done("assets"):
         run("story_keyframes", "assets")
-        run("story_motion", "assets")
+        if args.format == "story":
+            run("story_motion", "assets")
+        else:
+            run("story_motion", "assets", seconds=3, max_clips=2)  # the boys' hello and goodbye only
+            run("quick_motion", "assets")  # the experiment moves by code, from approved plates
         run("story_narration", "assets")
         checkpoint("assets", "asset_manifest")
     if runtime not in {"remotion", "hyperframes"}:

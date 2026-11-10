@@ -99,6 +99,7 @@ class StoryMotion(BaseTool):
             "project_dir": {"type": "string"},
             "quality": {"type": "string", "enum": ["draft", "final"], "default": "final"},
             "max_clips": {"type": "integer", "default": 5},
+            "seconds": {"type": "number", "default": 5, "description": "Clip length (Quick Science uses 3)"},
         },
     }
     resource_profile = ResourceProfile(cpu_cores=8, ram_mb=60000, vram_mb=0, disk_mb=3000, network_required=False)
@@ -135,6 +136,7 @@ class StoryMotion(BaseTool):
         vdir = project / "assets" / "video"
         vdir.mkdir(parents=True, exist_ok=True)
         ltx = LTXVideoMLX()
+        clip_seconds = float(inputs.get("seconds", CLIP_SECONDS))
         report: dict[str, Any] = {}
         kept = []
 
@@ -152,7 +154,7 @@ class StoryMotion(BaseTool):
             quality = inputs.get("quality", "final")
             res = ltx.execute({
                 "operation": "image_to_video", "reference_image_path": str(ref), "prompt": motion_prompt(shot, exp),
-                "width": 1024, "height": 576, "num_frames": CLIP_SECONDS * FPS + 1, "fps": FPS,
+                "width": 1024, "height": 576, "num_frames": int(clip_seconds * FPS) + 1, "fps": FPS,
                 "quality": quality, "stage1_steps": 35, "stage2_steps": 3, "cfg_scale": 2.0,
                 "teacache_thresh": 0.18, "seed": 7, "output_path": str(raw),
             })
@@ -169,7 +171,9 @@ class StoryMotion(BaseTool):
             try:
                 # Drift lives in a clip's tail; its opening seconds are nearly
                 # always clean. Check in time order and keep the clean prefix.
-                for label, at in (("first", 0.6), ("early", 1.2), ("middle", 2.6), ("end", CLIP_SECONDS - 0.2)):
+                checkpoints = [(lbl, t) for lbl, t in (("first", 0.6), ("early", 1.2), ("middle", 2.6))
+                               if t < clip_seconds - 0.2] + [("end", clip_seconds - 0.2)]
+                for label, at in checkpoints:
                     sim = similarity_to_still(ref, clip, at)
                     if sim < MIN_SIMILARITY:
                         verdicts.append({"frame": label, "at": at, "hard_ok": False, "similarity": round(sim, 3),
@@ -192,7 +196,7 @@ class StoryMotion(BaseTool):
             if keep_until is not None and keep_until < MIN_KEEP_SECONDS:
                 keep_until = None  # a sub-second wiggle isn't motion worth keeping
             if keep_until is not None:
-                if keep_until < CLIP_SECONDS - 0.2:
+                if keep_until < clip_seconds - 0.2:
                     trimmed = vdir / f"{sid}-trim.mp4"
                     subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(clip), "-t", f"{keep_until:.2f}",
                                     "-an", str(trimmed)], check=True, capture_output=True)

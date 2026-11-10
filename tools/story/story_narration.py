@@ -107,7 +107,7 @@ class StoryNarration(BaseTool):
         line_dir.mkdir(parents=True, exist_ok=True)
 
         lines = []
-        for beat in ks.beats():
+        for beat in ks.episode_beats(script):
             for i, line in enumerate(lines_by_beat[beat["id"]], 1):
                 v = voices[line["speaker"]]
                 lines.append({
