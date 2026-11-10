@@ -45,7 +45,7 @@ def client(projects_root, monkeypatch):
     monkeypatch.setattr(publish_mod, "_load_env", lambda: None)
     # Registry discovery elsewhere in the suite may already have loaded .env.
     monkeypatch.delenv("YOUTUBE_DEFAULT_PRIVACY", raising=False)
-    with TestClient(server_mod.create_app()) as c:
+    with TestClient(server_mod.create_app(), base_url="http://127.0.0.1:4750") as c:
         yield c
 
 
