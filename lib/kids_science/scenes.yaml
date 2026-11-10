@@ -1,0 +1,977 @@
+# Code-drawn scenes for Quick Science (see lib/kids_science/stage.py).
+#
+# parts:  everything on the table; `hidden: true` parts pop in when named.
+# beats:  per beat, actions that start on a narration word (`at`), lasting
+#         until `to` or for `dur` seconds. `word+1.5` = 1.5 s after the word,
+#         `+1.0` = 1 s after the line ends, a number = fraction of the beat.
+# fx:     pour | drops | sprinkle | move | drip | clock (plain `set` otherwise)
+# Text on screen always comes from the experiment library; only short
+# captions (observe_caption, explain captions, thumb) are written here.
+
+walking-water:
+  focus: [590, 430]
+  thumb: "Water that climbs?!"
+  observe_caption: "Red and yellow meet in the middle and make orange!"
+  parts:
+    - {id: dropR, type: dropper, x: 90, y: 590, s: 0.85, color: red, hidden: true, label: "red", label_at: [90, 645]}
+    - {id: dropY, type: dropper, x: 175, y: 590, s: 0.85, color: yellow, hidden: true, label: "yellow", label_at: [175, 680]}
+    - {id: cupL, type: container, kind: cup, x: 290, y: 590, hidden: true, label: "3 clear cups", label_at: [590, 250]}
+    - {id: cupM, type: container, kind: cup, x: 610, y: 590, hidden: true}
+    - {id: cupR, type: container, kind: cup, x: 900, y: 590, hidden: true}
+    - {id: stripL, type: strip, color: red, shown: 0, points: [[365, 565], [390, 295], [470, 220], [535, 295], [565, 565]]}
+    - {id: stripR, type: strip, color: yellow, shown: 0, points: [[815, 565], [790, 295], [710, 220], [645, 295], [615, 565]]}
+    - {id: towel1, type: towel, x: 1060, y: 680, long: true, hidden: true, label: "2 paper towels", label_at: [1150, 640]}
+    - {id: towel2, type: towel, x: 1230, y: 700, long: true, hidden: true}
+    - {id: jug, type: pourer, kind: jug, x: 1150, y: 590, s: 0.7, color: water, hidden: true, label: "water", label_at: [1150, 250]}
+  beats:
+    materials:
+      - {at: cups, show: [cupL, cupM, cupR], stagger: 0.15}
+      - {at: water, show: [jug]}
+      - {at: red, show: [dropR]}
+      - {at: yellow, show: [dropY]}
+      - {at: paper, show: [towel1, towel2], stagger: 0.2}
+    step1:
+      - {fx: move, at: line, dur: 2.4, set: {cupL.x: 330, cupM.x: 590, cupR.x: 850}}
+    step2:
+      - {fx: pour, by: jug, into: cupL, at: fill, dur: 4.2, set: {cupL.l0: 0.7}}
+      - {fx: pour, by: jug, into: cupR, at: fill+4.4, dur: 4.2, set: {cupR.l0: 0.7}}
+    step3:
+      - {fx: drops, by: dropR, into: cupL, at: red, dur: 4.0, set: {cupL.c0: red}}
+      - {fx: drops, by: dropY, into: cupR, at: yellow+1.5, dur: 4.0, set: {cupR.c0: yellow}}
+    step4:
+      - {at: fold, dur: 2.6, set: {towel1.fold: 1, towel2.fold: 1}, sfx: whoosh}
+    step5:
+      - {at: put, hide: [towel1, towel2]}
+      - {at: end, dur: 2.4, set: {stripL.shown: 1}, sfx: whoosh}
+      - {at: other, dur: 2.4, set: {stripR.shown: 1}, sfx: whoosh}
+    step6:
+      - {fx: clock, at: wait, to: "+2.4", minutes: 60, set: {}}
+      - {at: wait, to: "+2.4", set: {stripL.wick: 0.55, stripR.wick: 0.55}}
+    watch:
+      - {at: start, to: 1.0, set: {stripL.wick: 1, stripR.wick: 1}}
+    observe:
+      - {fx: drip, into: cupM, at: drips, to: orange+1.0, from: [[565, 520], [615, 520]], colors: [red, yellow], every: 0.6}
+      - {at: drips, to: orange+1.2, set: {cupM.l0: 0.32, cupM.c0: orange, cupL.l0: 0.62, cupR.l0: 0.62}}
+    explain: []
+  explain:
+    lens: fibers
+    color: red
+    anchor: [470, 220]
+    from: water
+    to: "gaps#2"
+    captions:
+      - {title: "Tiny fibers, tiny gaps", sub: "Water sticks to the fibers and to itself."}
+      - {at: capillary, title: "Capillary action!", sub: "Water climbs through tiny spaces."}
+
+fizzy-volcano:
+  focus: [640, 400]
+  thumb: "Foam volcano!"
+  observe_caption: "Red foam bubbles up and spills onto the tray!"
+  parts:
+    - {id: tray, type: tray, x: 640, y: 600, w: 600, hidden: true, label: "a tray", label_at: [640, 650]}
+    - {id: bottle, type: container, kind: bottle, x: 130, y: 590, s: 1.0, hidden: true, label: "small bottle", label_at: [130, 645]}
+    - {id: soda, type: pourer, kind: box, x: 290, y: 590, s: 1.0, color: white, hidden: true, label: "baking soda", label_at: [290, 680]}
+    - {id: spoon, type: spoon, x: 330, y: 690, s: 1.0, rot: 0, heap: 0, color: white, hidden: true}
+    - {id: vinegar, type: pourer, kind: bottle, x: 990, y: 590, s: 1.1, color: vinegar, hidden: true, label: "vinegar", label_at: [990, 645]}
+    - {id: soap, type: pourer, kind: jar, x: 1105, y: 590, s: 0.9, color: soap, hidden: true, label: "dish soap", label_at: [1105, 680]}
+    - {id: dropR, type: dropper, x: 1215, y: 590, s: 1.05, color: red, hidden: true, label: "red coloring", label_at: [1200, 645]}
+  beats:
+    materials:
+      - {at: small, show: [bottle]}
+      - {at: baking, show: [soda, spoon], stagger: 0.2}
+      - {at: vinegar, show: [vinegar]}
+      - {at: dish, show: [soap]}
+      - {at: red, show: [dropR]}
+      - {at: tray, show: [tray]}
+    step1:
+      - {fx: move, at: stand, dur: 2.4, set: {bottle.x: 640, bottle.y: 580}}
+    step2:
+      - {at: spoon, dur: 0.3, set: {spoon.heap: 1}}
+      - {fx: sprinkle, by: spoon, into: bottle, at: spoon, dur: 4.0, lift: 30, tilt: 70, dx: 30, set: {spoon.heap: 0, bottle.l0: 0.07, bottle.c0: white}}
+      - {at: spoon+4.2, dur: 0.3, set: {spoon.heap: 1}}
+      - {fx: sprinkle, by: spoon, into: bottle, at: spoon+4.3, dur: 4.0, lift: 30, tilt: 70, dx: 30, set: {spoon.heap: 0, bottle.l0: 0.14}}
+    step3:
+      - {fx: pour, by: soap, into: bottle, at: squirt, dur: 4.0, lift: -30, dx: 95, tilt: 60, set: {bottle.l1: 0.04, bottle.c1: soap}}
+      - {fx: drops, by: dropR, into: bottle, at: squirt+4.4, dur: 4.0, lift: 10, cloud: false, set: {bottle.c1: red}}
+    step4:
+      - {fx: pour, by: vinegar, into: bottle, at: pour, dur: 4.5, lift: -20, dx: 100, tilt: 60, set: {bottle.l2: 0.3, bottle.c2: foam, bottle.fizz: 0.6}}
+      - {at: step, dur: 1.5, set: {bottle.foam: 0.25}, sfx: fizz}
+    watch:
+      - {at: start, to: 1.0, set: {bottle.foam: 0.45, bottle.fizz: 1}, sfx: fizz}
+    observe:
+      - {at: red, to: tray+0.8, set: {bottle.foam: 1}, sfx: fizz}
+    explain: []
+  explain:
+    lens: bubbles
+    color: red
+    anchor: [640, 305]
+    from: start
+    to: 0.9
+    captions:
+      - {title: "Acid meets base", sub: "Vinegar is an acid. Baking soda is a base."}
+      - {at: gas, title: "Carbon dioxide!", sub: "They react and make a new gas: bubbles!"}
+      - {at: soap, title: "Soap traps the bubbles", sub: "...into a thick foam."}
+
+density-tower:
+  focus: [640, 400]
+  thumb: "4 liquids, 1 glass!"
+  observe_caption: "Four layers that don't mix!"
+  parts:
+    - {id: glass, type: container, kind: glass, x: 640, y: 590, s: 1.15, hidden: true, label: "tall glass", label_at: [640, 645]}
+    - {id: honey, type: pourer, kind: jar, x: 150, y: 590, s: 0.9, color: honey, hidden: true, label: "honey", label_at: [150, 645]}
+    - {id: soap, type: pourer, kind: jar, x: 300, y: 590, s: 0.9, color: soap, hidden: true, label: "dish soap", label_at: [300, 680]}
+    - {id: mix, type: container, kind: cup, x: 960, y: 590, s: 0.5, l0: 0.6, hidden: true, label: "water", label_at: [960, 645]}
+    - {id: bluecup, type: pourer, kind: jug, x: 960, y: 590, s: 0.6, color: blue, hidden: true}
+    - {id: dropB, type: dropper, x: 1080, y: 590, s: 0.95, color: blue, hidden: true, label: "blue coloring", label_at: [1080, 680]}
+    - {id: oil, type: pourer, kind: bottle, x: 1200, y: 590, s: 1.0, color: oil, hidden: true, label: "oil", label_at: [1200, 645]}
+    - {id: tHoney, type: tag, text: "honey", x: 330, y: 525, to: [570, 550], hidden: true}
+    - {id: tSoap, type: tag, text: "soap", x: 330, y: 455, to: [570, 480], hidden: true}
+    - {id: tWater, type: tag, text: "blue water", x: 950, y: 380, to: [715, 405], hidden: true}
+    - {id: tOil, type: tag, text: "oil", x: 950, y: 300, to: [715, 330], hidden: true}
+  beats:
+    materials:
+      - {at: tall, show: [glass]}
+      - {at: honey, show: [honey]}
+      - {at: dish, show: [soap]}
+      - {at: water, show: [mix]}
+      - {at: blue, show: [dropB]}
+      - {at: vegetable, show: [oil]}
+    step1:
+      - {fx: pour, by: honey, into: glass, at: pour, dur: 4.5, lift: -40, dx: 95, set: {glass.l0: 0.2, glass.c0: honey}}
+    step2:
+      - {fx: pour, by: soap, into: glass, at: slowly, dur: 4.5, lift: -40, dx: 95, set: {glass.l1: 0.2, glass.c1: soap}}
+    step3:
+      - {fx: drops, by: dropB, into: mix, at: mix, dur: 4.0, lift: 10, set: {mix.c0: blue}}
+    step4:
+      - {at: slowly, hide: [mix]}
+      - {at: slowly, show: [bluecup]}
+      - {fx: pour, by: bluecup, into: glass, at: slowly+0.5, dur: 4.5, lift: -40, dx: 110, set: {glass.l2: 0.2, glass.c2: blue}}
+    step5:
+      - {fx: pour, by: oil, into: glass, at: slowly, dur: 4.5, lift: -40, dx: 95, set: {glass.l3: 0.2, glass.c3: oil}}
+    watch:
+      - {at: start, hide: [honey, soap, bluecup, dropB, oil, mix]}
+    observe:
+      - {at: honey, show: [tHoney]}
+      - {at: soap, show: [tSoap]}
+      - {at: blue, show: [tWater]}
+      - {at: oil, show: [tOil]}
+    explain: []
+  explain:
+    lens: particles
+    color: honey
+    anchor: [640, 540]
+    from: start
+    to: 0.3
+    captions:
+      - {title: "Density", sub: "How much stuff is packed into a space."}
+      - {at: more, title: "More dense sinks", sub: "Less dense floats on top."}
+      - {at: honey, title: "Honey: most dense", sub: "Oil: least dense, so it floats on top."}
+
+floating-egg:
+  focus: [640, 400]
+  thumb: "Can an egg float?!"
+  observe_caption: "Plain water: sinks. Salty water: floats!"
+  parts:
+    - {id: plain, type: container, kind: glass, x: 420, y: 590, s: 1.1, l0: 0.5, hidden: true}
+    - {id: egg2, type: egg, x: 420, y: 580, s: 1.0, hidden: true}
+    - {id: glass, type: container, kind: glass, x: 640, y: 590, s: 1.1, hidden: true, label: "tall glass", label_at: [640, 645]}
+    - {id: egg, type: egg, x: 1000, y: 590, s: 1.0, hidden: true, label: "an egg", label_at: [1000, 645]}
+    - {id: jug, type: pourer, kind: jug, x: 170, y: 590, s: 0.75, color: water, hidden: true, label: "water", label_at: [170, 645]}
+    - {id: salt, type: shaker, kind: salt, x: 1130, y: 590, s: 1.0, hidden: true, label: "salt", label_at: [1130, 645]}
+    - {id: spoon, type: spoon, x: 1060, y: 690, s: 1.0, hidden: true, label: "a spoon", label_at: [1180, 690]}
+    - {id: tPlain, type: tag, text: "plain water", x: 420, y: 168, hidden: true}
+    - {id: tSalty, type: tag, text: "very salty water", x: 860, y: 168, hidden: true}
+  beats:
+    materials:
+      - {at: tall, show: [glass]}
+      - {at: water, show: [jug]}
+      - {at: egg, show: [egg]}
+      - {at: salt, show: [salt]}
+      - {at: spoon, show: [spoon]}
+    step1:
+      - {fx: pour, by: jug, into: glass, at: fill, dur: 4.5, set: {glass.l0: 0.5}}
+    step2:
+      - {fx: move, at: gently, dur: 1.6, set: {egg.x: 640, egg.y: 200, spoon.x: 680, spoon.y: 205}}
+      - {fx: move, at: gently+1.8, dur: 2.6, set: {egg.y: 582, spoon.y: 380}}
+      - {fx: move, at: gently+4.6, dur: 1.2, set: {spoon.x: 1060, spoon.y: 690}}
+    step3:
+      - {fx: move, at: take, dur: 2.4, set: {egg.x: 1000, egg.y: 590}}
+      - {fx: sprinkle, by: salt, into: glass, at: stir, dur: 4.0, lift: 40, tilt: 150, set: {glass.milky: 0.25}}
+      - {fx: move, at: stir+4.2, dur: 1.2, set: {spoon.x: 690, spoon.y: 330, spoon.rot: -40}}
+      - {at: stir+5.4, dur: 2.0, set: {spoon.x: 620}, sfx: bubbles}
+      - {fx: move, at: stir+7.4, dur: 1.2, set: {spoon.x: 1060, spoon.y: 690, spoon.rot: 0}}
+    step4:
+      - {fx: move, at: gently, dur: 1.6, set: {egg.x: 640, egg.y: 200}}
+      - {fx: move, at: gently+1.8, dur: 3.0, set: {egg.y: 455}}
+    watch:
+      - {at: start, hide: [jug, salt, spoon]}
+    observe:
+      - {fx: move, at: plain, dur: 1.4, set: {glass.x: 860, egg.x: 860}}
+      - {at: plain, show: [plain, egg2, tPlain]}
+      - {at: salty, show: [tSalty]}
+    explain: []
+  explain:
+    lens: particles
+    color: water
+    anchor: [860, 440]
+    from: start
+    to: 0.4
+    captions:
+      - {title: "Sink or float?", sub: "More dense than water sinks. Less dense floats."}
+      - {at: dissolving, title: "Salt makes water denser", sub: "Now the egg floats!"}
+
+dancing-raisins:
+  focus: [640, 400]
+  thumb: "Dancing raisins!"
+  observe_caption: "Sink… float up… sink again!"
+  parts:
+    - {id: glass, type: container, kind: glass, x: 640, y: 590, s: 1.2, hidden: true, label: "tall glass", label_at: [640, 645]}
+    - {id: raisins, type: raisins, x: 640, y: 590, top: 300, n: 6, dance: 0, show: 0}
+    - {id: fizzy, type: pourer, kind: bottle, x: 220, y: 590, s: 1.1, color: fizzy, hidden: true, label: "fizzy water", label_at: [220, 645]}
+    - {id: bowl, type: container, kind: bowl, x: 1030, y: 590, s: 0.45, hidden: true, label: "raisins", label_at: [1030, 645]}
+    - {id: pile, type: raisins, x: 1030, y: 585, top: 560, n: 4, dance: 0, show: 0}
+  beats:
+    materials:
+      - {at: tall, show: [glass]}
+      - {at: fizzy, show: [fizzy]}
+      - {at: raisins, show: [bowl]}
+      - {at: raisins, dur: 0.5, set: {pile.show: 1}}
+    step1:
+      - {fx: pour, by: fizzy, into: glass, at: pour, dur: 4.5, lift: -30, dx: 100, set: {glass.l0: 0.75, glass.c0: fizzy, glass.fizz: 0.6}}
+    step2:
+      - {at: drop, dur: 0.5, set: {pile.show: 0}}
+      - {at: drop, dur: 1.2, set: {raisins.show: 1}, sfx: plink}
+    step3:
+      - {fx: clock, at: watch, to: "+2.2", minutes: 3}
+      - {at: watch, to: "+2.2", set: {raisins.dance: 0.5}}
+    watch:
+      - {at: start, to: 1.0, set: {raisins.dance: 1, glass.fizz: 0.8}}
+    observe: []
+    explain: []
+  explain:
+    lens: bubbles
+    color: water
+    anchor: [640, 420]
+    from: start
+    to: 0.9
+    captions:
+      - {title: "Carbon dioxide bubbles", sub: "Fizzy water is full of them."}
+      - {at: bubbles#2, title: "Tiny balloons!", sub: "Bubbles stick to the raisins and lift them."}
+      - {at: top, title: "Pop!", sub: "The bubbles pop and the raisins sink again."}
+
+lava-lamp:
+  focus: [640, 400]
+  thumb: "DIY lava lamp!"
+  thumb_zoom: 1.05
+  thumb_focus: [560, 470]
+  observe_caption: "Blue blobs rise… and sink… again and again!"
+  parts:
+    - {id: bottle, type: container, kind: bottle, x: 640, y: 590, s: 1.2, hidden: true, label: "clear bottle", label_at: [640, 645]}
+    - {id: tab, type: tablet, x: 1180, y: 600, s: 1.2, hidden: true, label: "fizzy tablet", label_at: [1180, 645]}
+    - {id: jug, type: pourer, kind: jug, x: 170, y: 590, s: 0.75, color: water, hidden: true, label: "water", label_at: [170, 645]}
+    - {id: oil, type: pourer, kind: bottle, x: 330, y: 590, s: 1.0, color: oil, hidden: true, label: "vegetable oil", label_at: [330, 680]}
+    - {id: dropB, type: dropper, x: 1030, y: 590, s: 1.0, color: blue, hidden: true, label: "blue coloring", label_at: [1030, 680]}
+  beats:
+    materials:
+      - {at: clear, show: [bottle]}
+      - {at: water, show: [jug]}
+      - {at: vegetable, show: [oil]}
+      - {at: blue, show: [dropB]}
+      - {at: fizzy, show: [tab]}
+    step1:
+      - {fx: pour, by: jug, into: bottle, at: fill, dur: 4.5, lift: -20, set: {bottle.l0: 0.25}}
+    step2:
+      - {fx: pour, by: oil, into: bottle, at: fill, dur: 5.0, lift: -30, dx: 90, set: {bottle.l1: 0.62, bottle.c1: oil}}
+    step3:
+      - {fx: drops, by: dropB, into: bottle, at: add, dur: 4.5, lift: 10, cloud: false, set: {bottle.c0: blue}}
+    step4:
+      - {fx: move, at: drop, dur: 1.6, set: {tab.x: 640, tab.y: 190}}
+      - {fx: move, at: drop+1.8, dur: 1.6, set: {tab.y: 570}}
+      - {at: drop+3.4, dur: 1.5, set: {bottle.fizz: 0.7, tab.show: 0.6}, sfx: fizz}
+    watch:
+      - {at: start, to: 1.0, set: {bottle.blobs: 0.5, tab.show: 0.3}}
+    observe:
+      - {at: blue, to: 0.5, set: {bottle.blobs: 1}, sfx: fizz}
+    explain: []
+  explain:
+    lens: bubbles
+    color: blue
+    anchor: [640, 420]
+    from: start
+    to: 0.9
+    captions:
+      - {title: "Oil and water don't mix", sub: "Oil is less dense, so it floats on top."}
+      - {at: food, title: "Color mixes with water", sub: "So it sinks down into the water."}
+      - {at: fizzy, title: "Carbon dioxide!", sub: "Bubbles carry blobs of colored water up."}
+
+rainbow-milk:
+  focus: [640, 545]
+  zoom: {hook: 1.6, step2: 1.6, step3: 1.0, step4: 1.6, watch: 1.7, observe: 1.7}
+  thumb: "Magic milk colors!"
+  thumb_zoom: 1.5
+  thumb_focus: [520, 520]
+  observe_caption: "The colors burst outward and swirl!"
+  parts:
+    - {id: plate, type: container, kind: plate, x: 640, y: 610, sh: 1.6, hidden: true, label: "shallow plate", label_at: [640, 645]}
+    - {id: milk, type: pourer, kind: jug, x: 150, y: 590, s: 0.75, color: milk, hidden: true, label: "whole milk", label_at: [150, 645]}
+    - {id: dropR, type: dropper, x: 940, y: 590, s: 0.9, color: red, hidden: true, label: "red", label_at: [940, 645]}
+    - {id: dropB, type: dropper, x: 1030, y: 590, s: 0.9, color: blue, hidden: true, label: "blue", label_at: [1030, 680]}
+    - {id: dropY, type: dropper, x: 1120, y: 590, s: 0.9, color: yellow, hidden: true, label: "yellow", label_at: [1120, 645]}
+    - {id: soapdish, type: container, kind: bowl, x: 1215, y: 600, s: 0.3, l0: 0.7, c0: soap, opaque: true, hidden: true, label: "dish soap", label_at: [1215, 680]}
+    - {id: swab, type: swab, x: 300, y: 600, rot: 75, color: soap, hidden: true, label: "cotton swab", label_at: [300, 680]}
+  beats:
+    materials:
+      - {at: shallow, show: [plate]}
+      - {at: whole, show: [milk]}
+      - {at: red, show: [dropR]}
+      - {at: blue, show: [dropB]}
+      - {at: yellow, show: [dropY]}
+      - {at: dish, show: [soapdish]}
+      - {at: cotton, show: [swab]}
+    step1:
+      - {fx: pour, by: milk, into: plate, at: pour, dur: 5.0, lift: -60, dx: 150, set: {plate.milk: 1}}
+    step2:
+      - {fx: drops, by: dropR, into: plate, at: red, dur: 2.6, lift: 25, n: 2, cloud: false, set: {plate.dots: 0.34}}
+      - {fx: drops, by: dropB, into: plate, at: red+2.7, dur: 2.6, lift: 25, n: 2, cloud: false, set: {plate.dots: 0.67}}
+      - {fx: drops, by: dropY, into: plate, at: red+5.4, dur: 2.6, lift: 25, n: 2, cloud: false, set: {plate.dots: 1}}
+    step3:
+      - {fx: move, at: dip, dur: 1.6, set: {swab.x: 1215, swab.y: 520, swab.rot: 0}}
+      - {fx: move, at: dip+1.7, dur: 1.0, set: {swab.y: 575, swab.dipped: 1}}
+      - {fx: move, at: dip+2.8, dur: 1.0, set: {swab.y: 470}}
+    step4:
+      - {fx: move, at: touch, dur: 2.0, set: {swab.x: 640, swab.y: 410}}
+      - {fx: move, at: touch+2.1, dur: 1.0, set: {swab.y: 545}}
+    watch:
+      - {at: start, hide: [milk, dropR, dropB, dropY, soapdish]}
+    observe:
+      - {at: burst, to: swirl+1.5, set: {plate.burst: 1}, sfx: whoosh}
+    explain: []
+  explain:
+    lens: skin
+    color: water
+    anchor: [640, 540]
+    from: soap
+    to: edges
+    captions:
+      - {title: "Surface tension", sub: "Milk's surface acts like a thin stretchy skin."}
+      - {at: soap, title: "Soap weakens the skin", sub: "The surface pulls away and carries the colors."}
+      - {at: fat, title: "Soap grabs the fat", sub: "That keeps the milk swirling."}
+
+pepper-scatter:
+  focus: [640, 545]
+  zoom: {hook: 1.6, step2: 1.6, step3: 1.0, step4: 1.6, watch: 1.7, observe: 1.7}
+  thumb: "Pepper runs away!"
+  thumb_zoom: 1.4
+  thumb_focus: [520, 520]
+  observe_caption: "The pepper rushes to the edges!"
+  parts:
+    - {id: bowl, type: container, kind: bowl, x: 640, y: 600, s: 1.2, opaque: true, hidden: true, label: "shallow bowl", label_at: [640, 645]}
+    - {id: jug, type: pourer, kind: jug, x: 150, y: 590, s: 0.75, color: water, hidden: true, label: "water", label_at: [150, 645]}
+    - {id: pepper, type: shaker, kind: pepper, x: 1000, y: 590, s: 1.0, hidden: true, label: "black pepper", label_at: [1000, 645]}
+    - {id: soapdish, type: container, kind: bowl, x: 1150, y: 600, s: 0.3, l0: 0.7, c0: soap, opaque: true, hidden: true, label: "dish soap", label_at: [1150, 680]}
+    - {id: swab, type: swab, x: 300, y: 600, rot: 75, color: soap, hidden: true, label: "cotton swab", label_at: [300, 680]}
+  beats:
+    materials:
+      - {at: shallow, show: [bowl]}
+      - {at: water, show: [jug]}
+      - {at: ground, show: [pepper]}
+      - {at: dish, show: [soapdish]}
+      - {at: cotton, show: [swab]}
+    step1:
+      - {fx: pour, by: jug, into: bowl, at: fill, dur: 5.0, lift: -20, dx: 140, set: {bowl.l0: 0.7}}
+    step2:
+      - {fx: sprinkle, by: pepper, into: bowl, at: sprinkle, dur: 5.0, lift: 40, tilt: 150, color: [40, 35, 30], set: {bowl.specks: 1}}
+    step3:
+      - {fx: move, at: dip, dur: 1.6, set: {swab.x: 1150, swab.y: 520, swab.rot: 0}}
+      - {fx: move, at: dip+1.7, dur: 1.0, set: {swab.y: 575, swab.dipped: 1}}
+      - {fx: move, at: dip+2.8, dur: 1.0, set: {swab.y: 470}}
+    step4:
+      - {fx: move, at: touch, dur: 2.0, set: {swab.x: 640, swab.y: 380}}
+      - {fx: move, at: touch+2.1, dur: 1.0, set: {swab.y: 486}}
+    watch:
+      - {at: start, hide: [jug, pepper, soapdish]}
+    observe:
+      - {at: pepper, dur: 0.9, set: {bowl.scatter: 1}, sfx: whoosh}
+    explain: []
+  explain:
+    lens: skin
+    color: water
+    anchor: [640, 490]
+    from: soap
+    to: edges
+    captions:
+      - {title: "Surface tension", sub: "Water's surface acts like a stretchy skin."}
+      - {at: soap, title: "Soap weakens the skin", sub: "Right where it touches."}
+      - {at: stronger, title: "The edges pull harder", sub: "The floating pepper is carried along."}
+
+candy-rainbow:
+  focus: [640, 540]
+  zoom: {hook: 1.6, step1: 1.5, step2: 1.3, step3: 1.6, watch: 1.6, observe: 1.7}
+  thumb: "Candy rainbow!"
+  thumb_zoom: 1.5
+  thumb_focus: [520, 520]
+  observe_caption: "A rainbow wheel of color!"
+  parts:
+    - {id: plate, type: container, kind: plate, x: 640, y: 610, sh: 1.6, hidden: true, label: "white plate", label_at: [640, 645]}
+    - {id: jug, type: pourer, kind: jug, x: 1100, y: 590, s: 0.75, color: water, hidden: true, label: "warm water", label_at: [1100, 645]}
+    - {id: bag, type: container, kind: bowl, x: 170, y: 600, s: 0.5, hidden: true, label: "colored candies", label_at: [170, 645]}
+  beats:
+    materials:
+      - {at: white, show: [plate]}
+      - {at: round, show: [bag]}
+      - {at: warm, show: [jug]}
+    step1:
+      - {at: arrange, to: "+1.0", set: {plate.candies: 1}, sfx: pop}
+    step2:
+      - {fx: pour, by: jug, into: plate, at: pour, dur: 5.0, lift: -60, dx: 150, set: {plate.wet: 1}}
+    step3:
+      - {fx: clock, at: hold, to: "+2.4", minutes: 1}
+      - {at: hold, to: "+2.4", set: {plate.diffuse: 0.3}}
+    watch:
+      - {at: start, hide: [jug, bag]}
+      - {at: start, to: 1.0, set: {plate.diffuse: 0.5}}
+    observe:
+      - {at: stripes, to: wheel+1.0, set: {plate.diffuse: 1}}
+    explain: []
+  explain:
+    lens: dissolve
+    color: red
+    anchor: [880, 520]
+    from: warm
+    to: diffusion
+    captions:
+      - {title: "Sugar and color", sub: "That's what the candy coating is made of."}
+      - {at: warm, title: "Warm water dissolves it", sub: "The color spreads out through the water."}
+      - {at: diffusion, title: "Diffusion!", sub: "From a lot to a little."}
+
+paperclip-float:
+  focus: [640, 545]
+  zoom: {hook: 1.6, step2: 1.6, step3: 1.0, step4: 1.6, watch: 1.7, observe: 1.7}
+  thumb: "Floating metal?!"
+  thumb_zoom: 1.4
+  thumb_focus: [520, 520]
+  observe_caption: "The tissue sinks, but the paper clip floats!"
+  parts:
+    - {id: bowl, type: container, kind: bowl, x: 640, y: 600, s: 1.2, opaque: true, hidden: true, label: "bowl of water", label_at: [640, 645]}
+    - {id: jug, type: pourer, kind: jug, x: 150, y: 590, s: 0.75, color: water, hidden: true}
+    - {id: tissue, type: towel, x: 1000, y: 600, s: 0.6, hidden: true, label: "tissue paper", label_at: [1000, 645]}
+    - {id: pencil, type: pencil, x: 330, y: 640, s: 0.75, rot: -90, hidden: true, label: "a pencil", label_at: [210, 680]}
+    - {id: clipA, type: clip, x: 1150, y: 600, s: 1.3, hidden: true, label: "paper clip", label_at: [1160, 680]}
+  beats:
+    materials:
+      - {at: bowl, show: [bowl, jug]}
+      - {at: tissue, show: [tissue]}
+      - {at: metal, show: [clipA]}
+      - {at: pencil, show: [pencil]}
+    step1:
+      - {fx: pour, by: jug, into: bowl, at: fill, dur: 5.0, lift: -20, dx: 140, set: {bowl.l0: 0.7}}
+    step2:
+      - {at: lay, hide: [tissue, jug]}
+      - {at: lay, to: "+0.5", set: {bowl.tissue: 1}, sfx: whoosh}
+    step3:
+      - {fx: move, at: gently, dur: 2.0, set: {clipA.x: 640, clipA.y: 380, clipA.s: 1.0}}
+      - {fx: move, at: gently+2.1, dur: 1.4, set: {clipA.y: 476}}
+      - {at: gently+3.5, hide: [clipA]}
+      - {at: gently+3.5, dur: 0.1, set: {bowl.clip: 1}, sfx: plink}
+    step4:
+      - {fx: move, at: pencil, dur: 2.0, set: {pencil.x: 590, pencil.y: 420, pencil.rot: 20}}
+      - {fx: move, at: push, dur: 1.4, set: {pencil.y: 475}}
+      - {at: push+0.4, to: sinks+0.8, set: {bowl.sink: 1}}
+    watch:
+      - {at: start, dur: 1.2, set: {pencil.x: 330, pencil.y: 640, pencil.rot: -90}}
+    observe:
+      - {at: paper, to: "+0.5", set: {bowl.dimple: 1}}
+    explain: []
+  explain:
+    lens: skin
+    color: water
+    anchor: [640, 490]
+    from: gently
+    to: 0.95
+    captions:
+      - {title: "Surface tension", sub: "The water's surface acts like a thin stretchy skin."}
+      - {at: paper, title: "Metal is more dense", sub: "So a paper clip would normally sink…"}
+      - {at: gently, title: "…but the skin holds it up!", sub: "If you set it down gently."}
+
+static-balloon:
+  focus: [640, 420]
+  thumb: "Balloon magic!"
+  observe_caption: "The balloon sticks to the wall!"
+  parts:
+    - {id: wall, type: wall, x: 1000, py: 300, hidden: true, label: "a wall", label_at: [1140, 645]}
+    - {id: sweater, type: sweater, x: 260, y: 610, s: 1.15, color: blue, hidden: true, label: "wool sweater", label_at: [260, 645]}
+    - {id: head, type: head, x: 640, y: 590, s: 1.35, hidden: true, label: "your hair", label_at: [640, 645]}
+    - {id: balloon, type: balloon, x: 640, y: 230, s: 0.95, inflate: 0.15, color: red, hidden: true, label: "a balloon", label_at: [640, 200]}
+  beats:
+    materials:
+      - {at: balloon, show: [balloon]}
+      - {at: hair, show: [head]}
+      - {at: wool, show: [sweater]}
+      - {at: wall, show: [wall]}
+    step1:
+      - {at: blow, to: tie, set: {balloon.inflate: 1}, sfx: whoosh}
+      - {at: tie, dur: 0.4, sfx: pop}
+    step2:
+      - {fx: move, at: rub, dur: 1.4, set: {balloon.x: 260, balloon.y: 400}}
+      - {fx: rub, part: balloon, at: rub+1.5, dur: 6.0, amp: 60, n: 8, set: {balloon.charges: 1}}
+    step3:
+      - {fx: move, at: gently, to: wall+1.0, set: {balloon.x: 934, balloon.y: 300, wall.plus: 1}}
+    step4:
+      - {at: let, dur: 1.0, sfx: pop}
+    watch: []
+    observe:
+      - {at: hair, to: balloon#2, set: {head.stand: 1}, sfx: whoosh}
+    explain: []
+  explain:
+    lens: charges
+    color: red
+    anchor: [925, 300]
+    from: when
+    to: positive
+    captions:
+      - {title: "Tiny charges", sub: "Electrons carry a tiny electric charge."}
+      - {at: rubbing, title: "Rubbing moves electrons", sub: "From your hair onto the balloon."}
+      - {at: when, title: "Opposites attract", sub: "The wall's surface becomes slightly positive."}
+
+lemon-invisible-ink:
+  focus: [790, 540]
+  zoom: {hook: 1.4, step2: 1.3, step3: 1.5, step4: 1.3, watch: 1.5, observe: 1.6}
+  thumb: "Secret message!"
+  thumb_focus: [800, 560]
+  thumb_zoom: 1.5
+  observe_caption: "The secret message appears!"
+  parts:
+    - {id: paper, type: sheet, x: 800, y: 640, s: 1.4, write: 0, wet: 1, reveal: 0, hidden: true, label: "white paper", label_at: [800, 660]}
+    - {id: bowl, type: container, kind: bowl, x: 360, y: 600, s: 0.5, opaque: true, hidden: true, label: "small bowl", label_at: [360, 645]}
+    - {id: lemon, type: lemon, x: 160, y: 590, s: 1.0, hidden: true, label: "half a lemon", label_at: [160, 645]}
+    - {id: swab, type: swab, x: 520, y: 640, s: 0.9, rot: -90, color: lemon, hidden: true, label: "cotton swab", label_at: [470, 680]}
+    - {id: dryer, type: hairdryer, x: 1160, y: 330, s: 1.0, hidden: true, label: "hair dryer (grown-up)", label_at: [1110, 470]}
+  beats:
+    materials:
+      - {at: half, show: [lemon]}
+      - {at: small, show: [bowl]}
+      - {at: cotton, show: [swab]}
+      - {at: white, show: [paper]}
+      - {at: grown, show: [dryer]}
+    step1:
+      - {fx: move, at: squeeze, dur: 1.4, set: {lemon.x: 360, lemon.y: 450}}
+      - {fx: drip, into: bowl, at: squeeze+1.5, dur: 3.0, from: [[360, 455]], colors: [lemon], every: 0.4, set: {bowl.l0: 0.6, bowl.c0: lemon}}
+      - {fx: move, at: squeeze+4.6, dur: 1.2, set: {lemon.x: 160, lemon.y: 590}}
+    step2:
+      - {fx: move, at: dip, dur: 1.4, set: {swab.x: 360, swab.y: 470, swab.rot: 0}}
+      - {fx: move, at: dip+1.5, dur: 0.8, set: {swab.y: 545, swab.dipped: 1}}
+      - {fx: move, at: write, dur: 1.2, set: {swab.x: 690, swab.y: 610, swab.rot: 20}}
+      - {at: write+1.2, dur: 4.0, set: {paper.write: 1}}
+      - {fx: rub, part: swab, at: write+1.2, dur: 4.0, amp: 30, n: 5}
+      - {fx: move, at: write+5.4, dur: 1.2, set: {swab.x: 520, swab.y: 640, swab.rot: -90}}
+    step3:
+      - {fx: clock, at: let, to: "+2.4", minutes: 30}
+      - {at: dry, to: "+2.4", set: {paper.wet: 0}}
+    step4:
+      - {fx: move, at: warm, dur: 1.6, set: {dryer.x: 1010, dryer.y: 470, dryer.on: 1}, sfx: whoosh}
+    watch:
+      - {at: start, to: 1.0, set: {paper.reveal: 0.25}}
+    observe:
+      - {at: slowly, to: letters+1.0, set: {paper.reveal: 1}}
+    explain: []
+  explain:
+    lens: dissolve
+    color: brown
+    anchor: [770, 600]
+    from: heated
+    to: brown
+    captions:
+      - {title: "Sugars and acids", sub: "Lemon juice has carbon-based stuff in it."}
+      - {at: heated, title: "Heat turns them brown", sub: "Before the paper does!"}
+      - {at: browning, title: "Hidden writing appears", sub: "The browning makes it show up."}
+
+colored-celery:
+  focus: [640, 400]
+  thumb: "Blue & red leaves?!"
+  observe_caption: "Colored edges on the leaves!"
+  parts:
+    - {id: g1, type: container, kind: glass, x: 470, y: 600, s: 1.0, hidden: true, label: "2 clear glasses", label_at: [640, 645]}
+    - {id: g2, type: container, kind: glass, x: 810, y: 600, s: 1.0, hidden: true}
+    - {id: c1, type: celery, x: 1150, y: 630, s: 0.45, color: blue, hidden: true, label: "celery", label_at: [1150, 680]}
+    - {id: c2, type: celery, x: 810, y: 585, s: 0.85, color: red, hidden: true}
+    - {id: jug, type: pourer, kind: jug, x: 160, y: 590, s: 0.75, color: water, hidden: true, label: "water", label_at: [160, 645]}
+    - {id: dropB, type: dropper, x: 1010, y: 590, s: 0.95, color: blue, hidden: true, label: "blue", label_at: [1010, 645]}
+    - {id: dropR, type: dropper, x: 1080, y: 590, s: 0.95, color: red, hidden: true, label: "red", label_at: [1080, 680]}
+    - {id: tBlue, type: tag, text: "blue edges", x: 260, y: 200, to: [430, 240], hidden: true}
+    - {id: tRed, type: tag, text: "red edges", x: 1040, y: 200, to: [850, 240], hidden: true}
+  beats:
+    materials:
+      - {at: two, show: [g1, g2], stagger: 0.15}
+      - {at: water, show: [jug]}
+      - {at: blue, show: [dropB]}
+      - {at: red, show: [dropR]}
+      - {at: celery, show: [c1]}
+    step1:
+      - {fx: pour, by: jug, into: g1, at: fill, dur: 4.0, set: {g1.l0: 0.55}}
+      - {fx: pour, by: jug, into: g2, at: fill+4.2, dur: 4.0, set: {g2.l0: 0.55}}
+    step2:
+      - {fx: drops, by: dropB, into: g1, at: blue, dur: 3.5, lift: 10, n: 4, set: {g1.c0: blue}}
+      - {fx: drops, by: dropR, into: g2, at: red, dur: 3.5, lift: 10, n: 4, set: {g2.c0: red}}
+    step3:
+      - {fx: move, at: stand, dur: 2.0, set: {c1.x: 470, c1.y: 585, c1.s: 0.85}}
+      - {at: stand+2.2, dur: 0.8, set: {c2.show: 1}, sfx: pop}
+    step4:
+      - {fx: clock, at: leave, to: "+2.4", minutes: 720}
+      - {at: overnight, to: "+2.4", set: {c1.tint: 0.5, c2.tint: 0.5}}
+    watch:
+      - {at: start, hide: [jug, dropB, dropR]}
+    observe:
+      - {at: celery, to: edges+0.5, set: {c1.tint: 1, c2.tint: 1}}
+      - {at: blue, show: [tBlue]}
+      - {at: red, show: [tRed]}
+    explain: []
+  explain:
+    lens: tubes
+    color: blue
+    anchor: [470, 400]
+    from: start
+    to: 0.8
+    captions:
+      - {title: "Thin tubes inside", sub: "They carry water up from the roots."}
+      - {at: evaporates, title: "Leaves pull water up", sub: "Water evaporates from the leaves."}
+      - {at: food, title: "The color shows the way", sub: "It travels with the water."}
+
+glass-rainbow:
+  focus: [700, 430]
+  thumb: "Make a rainbow!"
+  observe_caption: "A small rainbow on the paper!"
+  parts:
+    - {id: room, type: dark, amount: 0}
+    - {id: beam1, type: beam, x: 300, y: 430, x2: 640, y2: 430, on: 0, spread0: 16, spread: 60}
+    - {id: beam2, type: beam, x: 640, y: 430, x2: 1010, y2: 430, on: 0, spread0: 50, spread: 30}
+    - {id: glass, type: container, kind: glass, x: 640, y: 600, s: 1.0, hidden: true, label: "clear glass", label_at: [640, 645]}
+    - {id: jug, type: pourer, kind: jug, x: 890, y: 590, s: 0.75, color: water, hidden: true}
+    - {id: torch, type: flashlight, x: 260, y: 430, s: 1.0, hidden: true, label: "a flashlight", label_at: [240, 500]}
+    - {id: screen, type: sheet, kind: screen, x: 1100, y: 600, s: 1.0, hidden: true, label: "white paper", label_at: [1100, 645]}
+  beats:
+    materials:
+      - {at: clear, show: [glass, jug]}
+      - {at: flashlight, show: [torch]}
+      - {at: white, show: [screen]}
+    step1:
+      - {fx: pour, by: jug, into: glass, at: fill, dur: 4.5, set: {glass.l0: 0.95}}
+    step2:
+      - {at: shine, hide: [jug]}
+      - {at: dark, dur: 1.5, set: {room.amount: 1}}
+      - {at: shine, dur: 1.0, set: {torch.on: 1, beam1.on: 1}, sfx: pop}
+    step3:
+      - {fx: move, at: hold, dur: 1.6, set: {screen.x: 1060}}
+      - {at: other, dur: 1.0, set: {beam2.on: 0.7}}
+    step4:
+      - {fx: rub, part: screen, at: move, dur: 4.0, amp: 30, n: 3}
+      - {at: colors, dur: 1.5, set: {screen.rainbow: 0.6}, sfx: chime}
+    watch: []
+    observe:
+      - {at: small, dur: 1.2, set: {screen.rainbow: 1}}
+    explain: []
+  explain:
+    lens: light
+    color: water
+    anchor: [640, 430]
+    from: bends
+    to: rainbow
+    captions:
+      - {title: "White light", sub: "It's really a mix of all the colors."}
+      - {at: bends, title: "Refraction!", sub: "Light bends going into water and back out."}
+      - {at: each, title: "Each color bends differently", sub: "So they spread into a rainbow."}
+
+balloon-rocket:
+  focus: [640, 400]
+  thumb: "Balloon rocket!"
+  observe_caption: "Zoom! Air out the back pushes it forward!"
+  parts:
+    - {id: chairL, type: chair, x: 420, y: 640, s: 0.95, hidden: true, label: "2 chairs", label_at: [640, 670]}
+    - {id: chairR, type: chair, x: 860, y: 640, s: 0.95, flip: true, hidden: true}
+    - {id: line, type: string, x: 300, y: 600, x2: 560, y2: 600, sag: 0, hidden: true, label: "string", label_at: [430, 560]}
+    - {id: straw, type: straw, x: 700, y: 600, hidden: true, label: "straw", label_at: [700, 560]}
+    - {id: balloon, type: balloon, horiz: true, x: 1010, y: 560, s: 0.7, inflate: 0.15, color: red, hidden: true, label: "balloon + tape", label_at: [1080, 645]}
+  beats:
+    materials:
+      - {at: string, show: [line]}
+      - {at: straw, show: [straw]}
+      - {at: balloon, show: [balloon]}
+      - {at: chairs, show: [chairL, chairR], stagger: 0.2}
+    step1:
+      - {fx: move, at: thread, dur: 2.4, set: {straw.x: 430, straw.y: 600}}
+    step2:
+      - {fx: move, at: tie, dur: 2.0, set: {line.x: 470, line.y: 368, line.x2: 810, line.y2: 368, straw.x: 520, straw.y: 368}}
+      - {fx: move, at: pull, dur: 2.4, set: {chairL.x: 130, chairR.x: 1150, line.x: 180, line.x2: 1100, straw.x: 300}}
+    step3:
+      - {at: blow, dur: 1.8, set: {balloon.inflate: 1}, sfx: whoosh}
+      - {fx: move, at: tape, dur: 1.6, set: {balloon.x: 300, balloon.y: 432}}
+    step4:
+      - {at: go, dur: 0.05, set: {balloon.rocket: 1}}
+      - {at: go, dur: 1.8, set: {balloon.x: 990, straw.x: 990, balloon.inflate: 0.35}, sfx: whoosh}
+    watch:
+      - {at: start, dur: 0.05, set: {balloon.x: 300, straw.x: 300, balloon.inflate: 1, balloon.rocket: 0}}
+    observe:
+      - {at: zooms, dur: 0.05, set: {balloon.rocket: 1}}
+      - {at: zooms, dur: 2.0, set: {balloon.x: 990, straw.x: 990, balloon.inflate: 0.35}, sfx: whoosh}
+    explain: []
+  explain:
+    lens: push
+    color: red
+    anchor: [990, 432]
+    from: start
+    to: 0.5
+    captions:
+      - {title: "Air pushes back", sub: "Air out the back pushes the balloon forward."}
+      - {at: every, title: "Equal and opposite", sub: "Every push has a push the other way."}
+      - {at: straw, title: "The straw keeps it straight", sub: "Along the string!"}
+
+ice-fishing:
+  focus: [640, 420]
+  thumb: "Fishing for ice!"
+  observe_caption: "The ice cube lifts out on the string!"
+  parts:
+    - {id: glass, type: container, kind: glass, x: 640, y: 610, s: 1.0, l0: 0.7, hidden: true, label: "glass of water", label_at: [640, 645]}
+    - {id: ice, type: ice, x: 1000, y: 590, s: 1.0, hidden: true, label: "ice cube", label_at: [1000, 645]}
+    - {id: line, type: string, x: 160, y: 600, x2: 330, y2: 600, sag: 0, hidden: true, label: "string", label_at: [245, 645]}
+    - {id: salt, type: shaker, kind: salt, x: 1150, y: 590, s: 1.0, hidden: true, label: "salt", label_at: [1150, 645]}
+    - {id: grains, type: salt, x: 640, y: 352, show: 0}
+  beats:
+    materials:
+      - {at: glass, show: [glass]}
+      - {at: ice, show: [ice]}
+      - {at: string, show: [line]}
+      - {at: salt, show: [salt]}
+    step1:
+      - {fx: move, at: float, dur: 1.4, set: {ice.x: 640, ice.y: 250}}
+      - {fx: move, at: float+1.5, dur: 1.6, set: {ice.y: 384}, sfx: plink}
+    step2:
+      - {fx: move, at: lay, dur: 2.4, set: {line.x: 640, line.y: 350, line.x2: 900, line.y2: 230, line.sag: 40}}
+    step3:
+      - {fx: sprinkle, by: salt, into: glass, at: sprinkle, dur: 4.0, lift: 30, tilt: 150, set: {grains.show: 1}}
+    step4:
+      - {fx: clock, at: wait, to: lift, minutes: 1}
+      - {fx: move, at: lift, dur: 2.0, set: {line.y: 210, line.x2: 900, line.y2: 150, line.sag: 0, ice.y: 244, grains.y: 212}}
+    watch:
+      - {at: start, hide: [salt]}
+    observe: []
+    explain: []
+  explain:
+    lens: ice
+    color: water
+    anchor: [640, 240]
+    from: start
+    to: 0.95
+    captions:
+      - {title: "Salt melts the top", sub: "Salt makes ice melt at a lower temperature."}
+      - {at: melting, title: "Melting makes it colder", sub: "It uses up heat."}
+      - {at: salt#2, title: "It freezes again", sub: "And traps the string in the ice!"}
+
+oobleck:
+  focus: [640, 470]
+  zoom: {step3: 1.3, step4: 1.3, observe: 1.4}
+  thumb: "Solid or liquid?!"
+  thumb_zoom: 1.4
+  thumb_focus: [520, 500]
+  observe_caption: "Tap fast: solid! Move slowly: liquid!"
+  parts:
+    - {id: bowl, type: container, kind: bowl, x: 640, y: 600, s: 1.2, opaque: true, hidden: true, label: "mixing bowl", label_at: [640, 645]}
+    - {id: starch, type: pourer, kind: box, x: 170, y: 590, s: 1.0, color: [246, 244, 236], hidden: true, label: "cornstarch", label_at: [170, 645]}
+    - {id: jug, type: pourer, kind: jug, x: 1060, y: 590, s: 0.75, color: water, hidden: true, label: "water", label_at: [1060, 645]}
+    - {id: spoon, type: spoon, x: 1180, y: 690, s: 1.0, hidden: true, label: "spoon", label_at: [1190, 645]}
+    - {id: finger, type: finger, x: 640, y: 330, s: 1.0, show: 0}
+    - {id: drip, type: drip, x: 640, y: 345, len: 0, show: 0}
+  beats:
+    materials:
+      - {at: mixing, show: [bowl]}
+      - {at: cornstarch, show: [starch]}
+      - {at: water, show: [jug]}
+      - {at: spoon, show: [spoon]}
+    step1:
+      - {fx: pour, by: starch, into: bowl, at: pour, dur: 5.0, lift: -20, dx: 140, set: {bowl.l0: 0.4, bowl.c0: goo}}
+    step2:
+      - {fx: pour, by: jug, into: bowl, at: slowly, dur: 4.5, lift: -20, side: -1, dx: 140, set: {bowl.l0: 0.6}}
+      - {fx: move, at: slowly+4.6, dur: 1.0, set: {spoon.x: 690, spoon.y: 470, spoon.rot: -40}}
+      - {fx: rub, part: spoon, at: slowly+5.6, dur: 2.4, amp: 50, n: 3, set: {bowl.goo: 1}}
+      - {fx: move, at: slowly+8.1, dur: 1.0, set: {spoon.x: 1180, spoon.y: 690, spoon.rot: 0}}
+    step3:
+      - {at: punch, dur: 0.3, set: {finger.show: 1}}
+      - {at: punch+0.3, dur: 0.25, set: {finger.y: 488}, sfx: pop}
+      - {at: punch+0.55, dur: 0.15, set: {bowl.crack: 1}}
+      - {at: punch+0.9, dur: 0.6, set: {finger.y: 360, bowl.crack: 0}}
+    step4:
+      - {at: slowly, to: scoop, set: {finger.y: 540}}
+      - {at: scoop, dur: 1.4, set: {finger.y: 340}}
+      - {at: scoop+0.4, dur: 0.6, set: {drip.show: 1}}
+      - {at: drip, to: "+2.0", set: {drip.len: 1}}
+    watch:
+      - {at: start, dur: 0.5, set: {drip.show: 0, drip.len: 0, finger.show: 1, finger.y: 360}}
+    observe:
+      - {at: tap, dur: 0.25, set: {finger.y: 488}, sfx: pop}
+      - {at: tap+0.25, dur: 0.15, set: {bowl.crack: 1}}
+      - {at: solid, dur: 0.6, set: {finger.y: 360, bowl.crack: 0}}
+      - {at: slowly, dur: 2.0, set: {finger.y: 540}}
+      - {at: flows, dur: 1.2, set: {finger.y: 340}}
+      - {at: flows+0.6, dur: 0.6, set: {drip.show: 1}}
+      - {at: flows, to: "+1.5", set: {drip.len: 1}}
+    explain: []
+  explain:
+    lens: grains
+    color: water
+    anchor: [640, 470]
+    from: hit
+    to: jam
+    captions:
+      - {title: "Grains in water", sub: "Tiny cornstarch grains floating in water."}
+      - {at: slowly, title: "Push slowly: it flows", sub: "The grains slide past each other."}
+      - {at: hit, title: "Hit fast: it jams", sub: "The grains lock together like a solid!"}
+
+sunset-glass:
+  focus: [660, 430]
+  thumb: "Sunset in a glass!"
+  observe_caption: "Side: a little blue. Straight through: orange!"
+  parts:
+    - {id: room, type: dark, amount: 0}
+    - {id: beam1, type: beam, x: 300, y: 430, x2: 640, y2: 430, on: 0, spread0: 16, spread: 50}
+    - {id: beam2, type: beam, x: 640, y: 430, x2: 1180, y2: 430, on: 0, spread0: 50, spread: 70, color: [255, 246, 200]}
+    - {id: blueglow, type: glow, x: 640, y: 440, r: 120, color: [120, 170, 255], show: 0}
+    - {id: orangeglow, type: glow, x: 1120, y: 430, r: 70, color: [255, 150, 60], show: 0}
+    - {id: glass, type: container, kind: glass, x: 640, y: 600, s: 1.0, hidden: true, label: "clear glass", label_at: [640, 645]}
+    - {id: jug, type: pourer, kind: jug, x: 890, y: 590, s: 0.75, color: water, hidden: true, label: "water", label_at: [890, 645]}
+    - {id: dropM, type: dropper, x: 1000, y: 590, s: 0.95, color: milk, hidden: true, label: "milk", label_at: [1000, 645]}
+    - {id: torch, type: flashlight, x: 260, y: 430, s: 1.0, hidden: true, label: "a flashlight", label_at: [240, 500]}
+    - {id: eye, type: eye, x: 640, y: 190, s: 1.0, show: 0}
+  beats:
+    materials:
+      - {at: clear, show: [glass]}
+      - {at: water, show: [jug]}
+      - {at: milk, show: [dropM]}
+      - {at: flashlight, show: [torch]}
+      - {at: dark, dur: 1.0, set: {room.amount: 0.5}}
+      - {at: dark+1.2, dur: 0.8, set: {room.amount: 0}}
+    step1:
+      - {fx: pour, by: jug, into: glass, at: fill, dur: 4.5, set: {glass.l0: 0.85}}
+    step2:
+      - {fx: drops, by: dropM, into: glass, at: stir, dur: 4.0, lift: 10, n: 3, cloud: false, set: {glass.milky: 0.55}}
+    step3:
+      - {at: dark, dur: 1.5, set: {room.amount: 1}}
+      - {at: shine, dur: 1.0, set: {torch.on: 1, beam1.on: 0.8, beam2.on: 0.6}, sfx: pop}
+    step4:
+      - {at: side, dur: 0.8, set: {eye.show: 1}, sfx: pop}
+      - {at: side, dur: 1.2, set: {blueglow.show: 1}}
+      - {fx: move, at: straight, dur: 1.8, set: {eye.x: 1120, eye.y: 330}}
+      - {at: straight+1.2, dur: 1.2, set: {orangeglow.show: 1, beam2.color: [255, 190, 110]}}
+    watch: []
+    observe:
+      - {at: blue, dur: 0.8, set: {blueglow.r: 140}}
+      - {at: orange, dur: 0.8, set: {orangeglow.r: 95, beam2.color: [255, 165, 80]}}
+    explain: []
+  explain:
+    lens: light
+    color: water
+    anchor: [640, 430]
+    from: start
+    to: 0.4
+    captions:
+      - {title: "White light", sub: "A mix of all colors."}
+      - {at: tiny, title: "Scattering", sub: "Tiny bits bounce blue light around the most."}
+      - {at: air, title: "Same in the sky", sub: "That's why the sky looks blue!"}
+
+bean-sprout:
+  focus: [640, 420]
+  thumb: "Watch a bean grow!"
+  observe_caption: "A root grows down, a shoot grows up!"
+  parts:
+    - {id: sun, type: glow, x: 1150, y: 120, r: 110, color: [255, 210, 90], show: 0}
+    - {id: bag, type: container, kind: bag, x: 640, y: 610, s: 1.0, hidden: true, label: "clear zip bag", label_at: [640, 645]}
+    - {id: towel, type: towel, x: 300, y: 640, s: 1.0, hidden: true, label: "paper towel", label_at: [300, 680]}
+    - {id: jug, type: pourer, kind: jug, x: 140, y: 590, s: 0.7, color: water, hidden: true, label: "water", label_at: [140, 645]}
+    - {id: b1, type: bean, x: 580, y: 400, s: 1.3, hidden: true, label: "dried beans", label_at: [1000, 645]}
+    - {id: b2, type: bean, x: 700, y: 430, s: 1.3, hidden: true}
+    - {id: tape, type: tag, text: "tape", x: 1000, y: 560, hidden: true}
+    - {id: tWin, type: tag, text: "sunny window", x: 1000, y: 230, hidden: true}
+  beats:
+    materials:
+      - {at: clear, show: [bag]}
+      - {at: paper, show: [towel]}
+      - {at: water, show: [jug]}
+      - {at: dried, dur: 0.5, set: {b1.show: 1, b1.x: 1000, b1.y: 590}}
+      - {at: tape, show: [tape]}
+      - {at: sunny, dur: 1.0, set: {sun.show: 1}}
+    step1:
+      - {fx: drip, into: towel, at: wet, dur: 3.5, from: [[300, 470]], colors: [water], every: 0.35}
+      - {at: wet+0.5, dur: 3.0, set: {towel.color: [214, 228, 240]}}
+    step2:
+      - {at: fold, dur: 1.4, set: {towel.fold: 1}, sfx: whoosh}
+      - {at: slide, hide: [towel]}
+      - {at: slide, dur: 1.2, set: {bag.l0: 0.85, bag.c0: [222, 234, 244]}}
+    step3:
+      - {fx: move, at: place, dur: 1.8, set: {b1.x: 580, b1.y: 400}}
+      - {at: place+1.0, dur: 0.6, set: {b2.show: 1}, sfx: pop}
+    step4:
+      - {at: tape, hide: [tape]}
+      - {at: sunny, show: [tWin]}
+      - {fx: clock, at: check, to: "+2.4", minutes: 600}
+    watch:
+      - {at: start, hide: [jug]}
+    observe:
+      - {at: root, to: downward+0.5, set: {b1.root: 1, b2.root: 1}}
+      - {at: green, to: "+1.0", set: {b1.shoot: 1, b2.shoot: 1}}
+    explain: []
+  explain:
+    lens: seed
+    color: water
+    anchor: [580, 400]
+    from: start
+    to: 0.5
+    captions:
+      - {title: "A baby plant inside", sub: "Plus a packed lunch of food."}
+      - {at: water, title: "Water wakes it up", sub: "Warmth helps it grow."}
+      - {at: roots, title: "Roots down, shoots up", sub: "Roots sense gravity; shoots grow toward light."}
+
+needle-compass:
+  focus: [640, 470]
+  zoom: {step3: 1.3, step4: 1.5, watch: 1.5, observe: 1.5, hook: 1.4}
+  thumb: "DIY compass!"
+  thumb_zoom: 1.4
+  thumb_focus: [520, 500]
+  observe_caption: "It points north and south every time!"
+  parts:
+    - {id: bowl, type: container, kind: bowl, x: 640, y: 600, s: 1.3, l0: 0.75, opaque: true, hidden: true, label: "bowl of water", label_at: [640, 645]}
+    - {id: needle, type: needle, x: 230, y: 660, s: 0.75, hidden: true, label: "sewing needle", label_at: [230, 680]}
+    - {id: magnet, type: magnet, x: 1080, y: 590, s: 1.0, hidden: true, label: "magnet", label_at: [1080, 645]}
+    - {id: cork, type: cork, x: 1180, y: 600, s: 1.2, needle: 0, pierced: 0, hidden: true, label: "cork", label_at: [1190, 680]}
+    - {id: tN, type: tag, text: "N", x: 845, y: 418, hidden: true}
+    - {id: tS, type: tag, text: "S", x: 435, y: 418, hidden: true}
+  beats:
+    materials:
+      - {at: sewing, show: [needle]}
+      - {at: magnet, show: [magnet]}
+      - {at: cork, show: [cork]}
+      - {at: bowl, show: [bowl]}
+    step1:
+      - {fx: move, at: stroke, dur: 1.4, set: {magnet.x: 180, magnet.y: 625}}
+      - {fx: rub, part: magnet, at: stroke+1.5, dur: 5.0, amp: 90, n: 5}
+      - {fx: move, at: stroke+6.6, dur: 1.2, set: {magnet.x: 1080, magnet.y: 590}}
+    step2:
+      - {fx: move, at: push, dur: 1.6, set: {cork.x: 230, cork.y: 672}}
+      - {at: push+1.7, hide: [needle]}
+      - {at: push+1.7, dur: 0.6, set: {cork.pierced: 1, cork.needle: 55}, sfx: pop}
+    step3:
+      - {fx: move, at: float, dur: 2.0, set: {cork.x: 640, cork.y: 470, cork.s: 1.0}}
+      - {at: float+2.1, hide: [cork]}
+      - {at: float+2.1, dur: 0.1, set: {bowl.cork: 1, bowl.needle: 55}, sfx: plink}
+    step4:
+      - {at: turn, to: settle+1.5, set: {bowl.needle: 0}}
+    watch: []
+    observe:
+      - {at: north, show: [tN]}
+      - {at: south, show: [tS]}
+    explain: []
+  explain:
+    lens: magnet
+    color: water
+    anchor: [640, 470]
+    from: earth
+    to: 0.9
+    captions:
+      - {title: "A weak magnet", sub: "Stroking with a magnet makes the needle a magnet."}
+      - {at: earth, title: "Earth is a giant magnet", sub: "A floating magnet lines up with it."}
